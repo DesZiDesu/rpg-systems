@@ -1,5 +1,5 @@
-import {parseStory,npcRole,usableNpcName,keyName,npcAttributeDefaults,resolveNpcSpeaker} from '../../npc-core.js?v=0.96.0';
-import {trueNameOf} from './names.js?v=0.96.0';
+import {parseStory,npcRole,usableNpcName,keyName,npcAttributeDefaults,resolveNpcSpeaker} from '../../npc-core.js?v=0.97.0';
+import {trueNameOf} from './names.js?v=0.97.0';
 
 const plain=s=>String(s||'').replace(/<think\b[^>]*>[\s\S]*?(?:<\/think>|$)/giu,'').replace(/<!--[\s\S]*?(?:-->|$)/gu,'').replace(/<[^>]*>/gu,' ').replace(/\s+/gu,' ').trim();
 const privateScene=/ตัดภาพ|ฉากอื่น|คุณไม่ได้อยู่|คุณมองไม่เห็น|\b(?:cutaway|off[- ]scene|elsewhere|unseen by you)\b/iu;

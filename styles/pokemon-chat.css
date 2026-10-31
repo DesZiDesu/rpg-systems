@@ -103,3 +103,11 @@
  #chat .pkc-body-mark{left:0}
 }
 @media(prefers-reduced-motion:reduce){#chat [data-pokemon-chat] *{animation:none!important;transition:none!important}}
+/* Wild Pokémon header with a Battle button (fallback when the reply did not start the battle). */
+#chat [data-pokemon-chat=header-row]{display:flex;align-items:center;gap:12px;width:100%;margin:0!important}
+#chat [data-pokemon-chat=header-row]>[data-pokemon-chat=header]{flex:1;min-width:0}
+#chat .pkc-battle{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid var(--pkc-accent,#e5372a);border-radius:999px;background:transparent;color:var(--pkc-accent,#e5372a);font:700 13px/1 var(--pkc-display,inherit);letter-spacing:.06em;cursor:pointer}
+#chat .pkc-battle svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#chat .pkc-battle:hover:not(:disabled){background:var(--pkc-accent,#e5372a);color:#fff}
+#chat .pkc-battle:disabled{opacity:.5;cursor:wait}
+#chat .pkc-battle:focus-visible{outline:2px solid var(--pkc-accent,#e5372a);outline-offset:3px}

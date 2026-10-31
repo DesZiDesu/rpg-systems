@@ -104,7 +104,7 @@ test('addon creator preferences default on, persist independently and retain add
 
 test('Pokédex image mode persists with character preferences and keeps legacy defaults',()=>{
  const raw={enabled:['pokemon'],pokemon:{theme:'classic-dark',sound:false,motion:true,dexImageMode:'sprite'}};
- const p=normalizeProfile(raw,'character');assert.equal(p.pokemon.dexImageMode,'sprite');assert.equal(p.pokemon.theme,'classic-dark');assert.equal(p.pokemon.sound,false);
+ const p=normalizeProfile(raw,'character');assert.equal(p.pokemon.dexImageMode,'sprite');assert.equal(p.pokemon.theme,'kinetic');assert.equal(p.pokemon.sound,false);
  assert.equal(normalizeProfile(JSON.parse(JSON.stringify(p)),'same-character').pokemon.dexImageMode,'sprite');
  assert.equal(normalizeProfile({...p,pokemon:{...p.pokemon,dexImageMode:'artwork'}},'character').pokemon.dexImageMode,'artwork');
  assert.equal(normalizeProfile({pokemon:{dexImageMode:'unexpected'}},'character').pokemon.dexImageMode,undefined);

@@ -1,6 +1,7 @@
-import {traitsFor,validateTraits,refreshStats} from './specimens.js?v=0.96.0';
-import {supportedMove} from './battle-rules.js?v=0.96.0';
-import {itemEffect,machineOptions} from './items.js?v=0.96.0';
+import {maxPP} from './item-use.js?v=0.97.0';
+import {traitsFor,validateTraits,refreshStats} from './specimens.js?v=0.97.0';
+import {supportedMove} from './battle-rules.js?v=0.97.0';
+import {itemEffect,machineOptions} from './items.js?v=0.97.0';
 const check=(ok,msg)=>{if(!ok)throw Error(msg);};
 export function trainingChoices(s,dex,uid){const m=s.pokemon[uid],p=m&&dex.get(m.key);if(!p)return[];const data=dex.training?.[p.pokemonId]||{level:p.learnset,machine:[],tutor:[]},rows=new Map();for(const [level,id]of data.level||[])if(level<=m.level)rows.set(id,{id,method:'level',level});for(const id of data.tutor||[])if(!rows.has(id))rows.set(id,{id,method:'tutor'});for(const id of data.machine||[])if(!rows.has(id))rows.set(id,{id,method:'machine'});return[...rows.values()].filter(v=>dex.moves[v.id]).map(v=>({...v,move:dex.moves[v.id],supported:supportedMove(dex,v.id),known:m.moves.some(slot=>slot.id===v.id),machines:machineOptions(dex,p,v.id)})).sort((a,b)=>a.move.name.localeCompare(b.move.name));}
 export function expansionAction(s,e,dex,{create,log}){
@@ -33,7 +34,7 @@ export function expansionAction(s,e,dex,{create,log}){
   if(e.traits)m.traits=validateTraits({...m.traits,...e.traits,legacy:false});
   if(e.level!==undefined){check(Number.isInteger(e.level)&&e.level>=1&&e.level<=100,'Level must be 1–100');m.level=e.level;m.exp=dex.experience[p.growth]?.[m.level]??m.level**3;}
   if(e.stats!==undefined){check(e.stats===null||Array.isArray(e.stats)&&e.stats.length===6&&e.stats.every(n=>n===null||Number.isInteger(n)&&n>=1&&n<=99999),'Stat overrides must be 1–99999 or blank');m.statOverrides=e.stats;}
-  if(e.ability!==undefined){check(p.abilities.some(a=>a.name===e.ability),'Choose an ability of this species');m.ability=e.ability;}if(e.nickname!==undefined)m.nickname=String(e.nickname).slice(0,36);if(typeof e.shiny==='boolean')m.shiny=e.shiny;refreshStats(p,m);if(e.heal){m.hp=m.stats[0];m.status='';for(const slot of m.moves)slot.pp=dex.moves[slot.id].pp;}m.cheated=true;log(s,'cheat-edit',{name:p.name,level:m.level,oldLevel});
- }else if(e.type==='cheat-heal'){for(const m of Object.values(s.pokemon)){m.hp=m.stats[0];m.status='';m.stages=Array(8).fill(0);for(const slot of m.moves)slot.pp=dex.moves[slot.id].pp;}log(s,'cheat-heal');}
+  if(e.ability!==undefined){check(p.abilities.some(a=>a.name===e.ability),'Choose an ability of this species');m.ability=e.ability;}if(e.nickname!==undefined)m.nickname=String(e.nickname).slice(0,36);if(typeof e.shiny==='boolean')m.shiny=e.shiny;refreshStats(p,m);if(e.heal){m.hp=m.stats[0];m.status='';for(const slot of m.moves)slot.pp=maxPP(dex,slot);}m.cheated=true;log(s,'cheat-edit',{name:p.name,level:m.level,oldLevel});
+ }else if(e.type==='cheat-heal'){for(const m of Object.values(s.pokemon)){m.hp=m.stats[0];m.status='';m.stages=Array(8).fill(0);for(const slot of m.moves)slot.pp=maxPP(dex,slot);}log(s,'cheat-heal');}
  else throw Error('Unknown cheat action');s.cheated=true;return true;
 }

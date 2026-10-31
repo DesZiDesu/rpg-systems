@@ -1,8 +1,8 @@
-import {executeMove as legacyMove,effectiveStat as legacyStat,applyStatus as legacyStatus,supportedMove as legacySupported} from './legacy-battle-rules.js?v=0.96.0';
-import {TRANSFORMATION_DATA} from './transformation-data.js?v=0.96.0';
-import {battleMove,battleTypes,stabMultiplier,prepareMoveForm,shieldForm,afterMoveForm,applyMaxEffect,applyZStatus,copyBattleForm,stage,baseKey} from './transformations.js?v=0.96.0';
-import {CONTACT_MOVES,POWDER_MOVES} from './move-flags.js?v=0.96.0';
-import {abilityOf,itemOf,statusAllowed,statMultiplier,changeStage,moveAllowed,fieldWeather,preDamage,damageModifier,afterDamage,WEATHER_MOVES,setWeather} from './mechanics.js?v=0.96.0';
+import {executeMove as legacyMove,effectiveStat as legacyStat,applyStatus as legacyStatus,supportedMove as legacySupported} from './legacy-battle-rules.js?v=0.97.0';
+import {TRANSFORMATION_DATA} from './transformation-data.js?v=0.97.0';
+import {battleMove,battleTypes,stabMultiplier,prepareMoveForm,shieldForm,afterMoveForm,applyMaxEffect,applyZStatus,copyBattleForm,stage,baseKey} from './transformations.js?v=0.97.0';
+import {CONTACT_MOVES,POWDER_MOVES} from './move-flags.js?v=0.97.0';
+import {abilityOf,itemOf,statusAllowed,statMultiplier,changeStage,moveAllowed,fieldWeather,preDamage,damageModifier,afterDamage,WEATHER_MOVES,setWeather} from './mechanics.js?v=0.97.0';
 export const STATUS_NAMES={paralysis:['อัมพาต','Paralysis'],sleep:['หลับ','Sleep'],freeze:['แช่แข็ง','Freeze'],burn:['ไหม้','Burn'],poison:['พิษ','Poison']};
 const ailments={1:'paralysis',2:'sleep',3:'freeze',4:'burn',5:'poison'};
 const special=new Set([144,150,182,197,203,588,606,...Object.keys(WEATHER_MOVES).map(Number)]);

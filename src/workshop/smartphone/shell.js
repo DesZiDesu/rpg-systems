@@ -1,5 +1,5 @@
-import {mountPhoneUI} from './ui.js?v=0.96.0';
-import {mountKeitaiUI} from './keitai/ui.js?v=0.96.0';
+import {mountPhoneUI} from './ui.js?v=0.97.0';
+import {mountKeitaiUI} from './keitai/ui.js?v=0.97.0';
 
 // Both handsets share one runtime, queue, phone save and branch journal.
 export function mountPhoneShell(runtime){

@@ -1,8 +1,8 @@
-import {mailAddress} from './handset.js?v=0.96.0';
-import {clean,key,fingerprint} from './model.js?v=0.96.0';
-import {phoneNpcForContact} from './identity.js?v=0.96.0';
-import {applyIncoming} from './engine.js?v=0.96.0';
-import {playerNpc} from '../../npc-visibility.js?v=0.96.0';
+import {mailAddress} from './handset.js?v=0.97.0';
+import {clean,key,fingerprint} from './model.js?v=0.97.0';
+import {phoneNpcForContact} from './identity.js?v=0.97.0';
+import {applyIncoming} from './engine.js?v=0.97.0';
+import {playerNpc} from '../../npc-visibility.js?v=0.97.0';
 
 export function incomingContactId(npcId){
  const value='npc-'+npcId;return key(value)?value:'npc-'+fingerprint(String(npcId)).slice(0,24);

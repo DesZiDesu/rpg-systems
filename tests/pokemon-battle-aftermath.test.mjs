@@ -52,7 +52,7 @@ test('running after a substitute entered sends out the healthy fighter, not the 
  for(let i=0;s.battle?.activeUid===first&&i<20;i++)s=act(s,'attack',{moveId:s.pokemon[first].moves[0].id});
  assert(s.battle,'the second party member should still be fighting');assert.notEqual(s.battle.activeUid,first);
  s.battle.wild.trapped=false;const healthy=s.battle.activeUid;s=act(s,'run');
- assert.equal(s.outUid,healthy);assert.equal(prompt(s).outsideCompanion.id,healthy);assert.deepEqual(prompt(s).faintedParty,['pokemon:'+first]);
+ assert.equal(s.outUid,healthy);assert.equal(prompt(s).outsideCompanion,'pokemon:'+healthy);assert.deepEqual(prompt(s).faintedParty,['pokemon:'+first]);
  assert(s.lastBattle.team.some(m=>m.chatSpeaker==='pokemon:'+first&&m.fainted));assert(s.lastBattle.team.some(m=>m.chatSpeaker==='pokemon:'+healthy&&!m.fainted));
 });
 

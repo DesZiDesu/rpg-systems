@@ -2,7 +2,7 @@
 // background, so the header, narration and lines sit on whatever SillyTavern
 // background or RoleForge theme surrounds them. Type colour is the only accent.
 // Native RoleForge copy nodes are kept; only Pokémon-owned presentation changes.
-import {isPokemonSpeaker} from './chat.js?v=0.96.0';
+import {isPokemonSpeaker} from './chat.js?v=0.97.0';
 const make=(doc,tag,cls,text)=>{const node=doc.createElement(tag);node.className=cls;if(text!==undefined)node.textContent=text;return node;};
 const t=(th,en,language)=>language==='th'?th:en;
 export const TYPE_COLORS={normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',electric:'#f8d030',ice:'#98d8d8',fighting:'#c03028',poison:'#a040a0',ground:'#e0c068',flying:'#a890f0',psychic:'#f85888',bug:'#a8b820',rock:'#b8a038',ghost:'#705898',dragon:'#7038f8',dark:'#705848',steel:'#b8b8d0',fairy:'#ee99ac',stellar:'#7163cd'};
@@ -19,7 +19,7 @@ function paint(node,profile){const types=profile.pokemon?.types||[];node.style.s
 export function pokemonSpeakerLabel(profile,doc=globalThis.document){
  const node=make(doc,'div','trpg-speaker-label pkc-speaker-label');node.append(icon(doc),make(doc,'span','',profile.pokemon.name));node.dataset.pokemonChat='label';paint(node,profile);return node;
 }
-export function pokemonSpeakerHeader(profile,{language='en',open=()=>{},document:doc=globalThis.document}={}){
+export function pokemonSpeakerHeader(profile,{language='en',open=()=>{},battle=null,document:doc=globalThis.document}={}){
  const p=profile.pokemon,button=make(doc,'button','trpg-header pkc-header');button.type='button';button.dataset.pokemonChat='header';button.dataset.pokemonUid=p.uid;button.dataset.roleforgeControl='pokemon';paint(button,profile);button.setAttribute('aria-label',t('เปิดข้อมูล ','Open ',language)+p.name);button.addEventListener('click',()=>open(p.uid));
  if(p.shiny)button.dataset.shiny='true';if(p.hp===0)button.dataset.fainted='true';
  // Art: a soft type-coloured light behind the Pokémon, never a frame.
@@ -42,7 +42,14 @@ export function pokemonSpeakerHeader(profile,{language='en',open=()=>{},document
  if(valid){track.setAttribute('role','progressbar');track.setAttribute('aria-label','HP');track.setAttribute('aria-valuenow',String(p.hp));track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(p.maxHp));}
  track.append(fill);vitals.append(make(doc,'span','pkc-hp-label','HP'),track,make(doc,'span','pkc-hp-value',valid?p.hp+' / '+p.maxHp:'—'));
  // A species-only header (no individual in this chat) has no level or HP.
- main.append(kicker,nameRow,facts,...p.speciesOnly?[]:[vitals]);button.append(art,main);return button;
+ main.append(kicker,nameRow,facts,...p.speciesOnly?[]:[vitals]);button.append(art,main);
+ // A wild Pokémon in the story can be fought from its header when the reply
+ // did not start the battle by itself.
+ if(!battle||!(p.speciesOnly||p.ownerKind==='wild')||battle.active?.(p))return button;
+ const row=make(doc,'div','pkc-header-row'),fight=make(doc,'button','pkc-battle');fight.type='button';fight.dataset.roleforgeControl='pokemon';fight.setAttribute('aria-label',t('สู้กับ ','Battle ',language)+p.name);
+ const sword=doc.createElementNS('http://www.w3.org/2000/svg','svg');sword.setAttribute('viewBox','0 0 24 24');sword.setAttribute('aria-hidden','true');for(const d of ['M14.5 17.5 3 6V3h3l11.5 11.5','M13 19l6-6','M16 16l4 4','M19 21l2-2']){const path=doc.createElementNS(sword.namespaceURI,'path');path.setAttribute('d',d);sword.append(path);}
+ fight.append(sword,make(doc,'span','',t('สู้','Battle',language)));fight.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();fight.disabled=true;Promise.resolve(battle.start(p)).catch(()=>{}).finally(()=>{fight.disabled=false;});});
+ paint(row,profile);row.dataset.pokemonChat='header-row';row.append(button,fight);return row;
 }
 // Lines the author already wrapped in quotes keep theirs; others get “ ”.
 const QUOTED=/^\s*["“”「『«‘']/u;

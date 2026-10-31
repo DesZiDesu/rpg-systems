@@ -31,8 +31,8 @@ try{for(const mobile of [false,true]){
   if(label.endsWith('flabebe-yellow'))assert((await app().locator('.pk-field-roster [data-pk-art-key="flabebe-yellow"]').getAttribute('src')).endsWith('/669-yellow.png'),'Missing catalogue art uses an exact static front thumbnail');
   await shot(label);await p.waitForTimeout(500);
  }
- for(const theme of ['kinetic','original','classic-dark']){
-  await p.evaluate(()=>RoleForgePokemon.open('settings'));await click('theme-set','[data-theme="'+theme+'"]');await p.evaluate(()=>RoleForgePokemon.open('adventure'));
+ for(const theme of ['kinetic']){
+  await p.evaluate(()=>RoleForgePokemon.open('settings'));await p.evaluate(()=>RoleForgePokemon.open('adventure'));
   for(const [uid,name,kind]of [['initial-0','pixel','pixel'],['initial-1','model','model'],['initial-2','static','static'],['initial-3','unown-b','pixel'],['initial-4','flabebe-yellow','model'],['initial-5','koraidon-gliding','model']]){await select(uid);await inspect(theme+'-'+name,kind);if(kind==='static')assert(await app().locator('.pk-ally-art img').evaluate(n=>n.getAnimations().length>0),'Static fallback has idle motion');}
  }
  await select('initial-5');await p.evaluate(()=>RoleForgePokemon.open('settings'));await click('motion-toggle');await p.evaluate(()=>RoleForgePokemon.open('adventure'));await loaded();assert(await app().locator('.pk-ally-art img').evaluate(n=>n.src.includes('/assets/battle/sprites/back/10267.png')));await shot('modern-motion-off');await p.evaluate(()=>RoleForgePokemon.open('settings'));await click('motion-toggle');await p.evaluate(()=>RoleForgePokemon.open('adventure'));await loaded();

@@ -51,7 +51,6 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-nav button[aria-current=page] :is(svg){color:var(--k-red)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-nav :is(.fa-solid,.pk-party-symbol){width:20px!important;height:20px!important;font-size:20px}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-nav button small{display:inline;margin-left:auto;font:600 11px var(--k-display);color:var(--k-muted)}
-#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-nav .pk-aperture-nav-index{display:none}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-nav-footer{display:grid!important;gap:2px;margin-top:auto;padding:12px 14px 4px;border-top:1px solid var(--k-line);color:var(--k-muted);font:600 11px/1.3 var(--k-display);letter-spacing:.12em}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-nav-footer>span{color:var(--k-ink)!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-nav-footer small{color:var(--k-muted)!important;font-size:11px;letter-spacing:.06em}
@@ -200,10 +199,6 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-theme-sample{border-radius:0!important}
 /* The swatch previews Kinetic from any theme; three choices share one row. */
 #roleforge-pokemon .pk-theme-picker{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-#roleforge-pokemon .pk-theme-sample[data-sample=kinetic]{background:#eef3f8!important;border:1px solid #d3dce8!important}
-#roleforge-pokemon .pk-theme-sample[data-sample=kinetic] i{background:#d92d20!important}
-#roleforge-pokemon .pk-theme-sample[data-sample=kinetic] b{background:#fff!important;box-shadow:2px 2px 0 #c9d4e2!important}
-#roleforge-pokemon .pk-theme-sample[data-sample=kinetic] em{background:#0f1b2d!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-theme-check{color:var(--k-red)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-setting-switch,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] [role=switch]{box-shadow:none}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-switch-track{border-radius:0!important;background:var(--k-line)!important;border:0!important}
@@ -471,3 +466,11 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-shop-receipt{box-shadow:4px 4px 0 var(--k-line)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] .pk-shop-bonus{background:#3a2d0a;border-color:#7a5d12;color:#fcd679}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] .pk-shop-toast{background:var(--k-ink);color:var(--k-bg)}
+/* Forms grid and Field journal follow the Kinetic panels in both schemes. */
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] button.pk-form{background:var(--k-panel);color:var(--k-ink);border:1px solid var(--k-line);border-radius:0;box-shadow:none}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] button.pk-form>span{color:var(--k-ink);font:600 13px var(--k-body)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] button.pk-form[aria-pressed=true]{background:var(--k-soft)!important;border-color:var(--k-red)!important;color:var(--k-ink)!important;box-shadow:3px 3px 0 var(--k-red)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-log{background:none;border:0;border-radius:0;overflow:visible}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-log li{background:var(--k-panel);color:var(--k-ink);border:1px solid var(--k-line)!important}
+/* Long Thai option labels must not widen the settings page on 320px phones. */
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-preference-card select{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}
