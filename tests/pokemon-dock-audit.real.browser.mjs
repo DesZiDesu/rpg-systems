@@ -39,7 +39,7 @@ try{for(const mobile of [false,true]){
  await panel().locator('[data-pk-action=explore]').click();await p.waitForFunction(()=>!RoleForgePokemon.debug().mutating);assert((await p.evaluate(()=>RoleForgePokemon.world())).battle);assert(await app().isVisible(),'Dock Explore opens the full battle');await click('run');await p.evaluate(async()=>{const c=SillyTavern.getContext();c.chat[0].extra={};await c.eventSource.emit(c.eventTypes.MESSAGE_EDITED,0);});await click('close'); // discard only QA actions; keep the initial message
  // Restore a harmless assistant anchor for all remaining recorded actions.
  await story(false);
- for(const theme of ['original','classic-dark']){
+ for(const theme of ['kinetic','original','classic-dark']){
   await open('settings');await click('theme-set','[data-theme="'+theme+'"]');
   const sizes=mobile?[320,390]:[1280,1920];for(const width of sizes){await place('Viridian Pokémon Center');await p.setViewportSize({width,height:mobile?844:width===1280?720:1080});
    for(const page of ['adventure','team','dex','storage','bag','settings','journal','services','center','training','trainers','quests','sandbox','bridge','equipment','coverage']){await open(page);await audit(theme+'-'+width+'-'+page);}
@@ -58,6 +58,6 @@ try{for(const mobile of [false,true]){
  }
  await p.setViewportSize(viewport);card.data.name='Starter audit '+device+' '+Date.now();card.data.extensions.roleforge_pokemon.started=false;card.data.extensions.roleforge_pokemon.initialParty=[];
  await p.evaluate(async card=>{const c=SillyTavern.getContext(),f=new FormData();f.set('file_type','json');f.set('avatar',new File([JSON.stringify(card)],'starter-audit.json',{type:'application/json'}));const r=await fetch('/api/characters/import',{method:'POST',headers:c.getRequestHeaders({omitContentType:true}),body:f}),v=await r.json();if(!r.ok||v.error)throw Error('Import failed');const h=await import('/script.js');await h.getCharacters();await h.selectCharacterById(String(c.characters.findIndex(n=>n.avatar===v.file_name||n.avatar===v.file_name+'.png')));await RoleForgeWorkshop.ready();},card);await p.waitForFunction(()=>globalThis.RoleForgePokemon&&RoleForgePokemon.world()?.started===false);
- for(const theme of ['original','classic-dark']){await open('settings');await click('theme-set','[data-theme="'+theme+'"]');await open('adventure');await audit(theme+'-starter');await dock();await dockGeometry(theme+'-dock-starter');}
+ for(const theme of ['kinetic','original','classic-dark']){await open('settings');await click('theme-set','[data-theme="'+theme+'"]');await open('adventure');await audit(theme+'-starter');await dock();await dockGeometry(theme+'-dock-starter');}
  await p.locator('#send_textarea').fill('');report.devices.push({device,begin,end,video:await p.video().path()});await ctx.close();ctx=null;console.log('PASS',device);
 }assert.deepEqual(report.errors,[]);assert.deepEqual(report.issues,[]);report.pass=true;}catch(e){report.failure=e.stack;process.exitCode=1;console.error(e);await p?.screenshot({path:out+'/proof/'+device+'-failure.png'}).catch(()=>{});}finally{await ctx?.close().catch(()=>{});await browser.close();await writeFile(out+'/proof/validation.json',JSON.stringify(report,null,2));}

@@ -17,7 +17,7 @@ try{for(const mobile of (process.env.PK_MOBILE_ONLY==='1'?[true]:[true,false])){
  await p.waitForFunction(()=>__pkSound.decodes>0);await open('settings');if(await p.evaluate(()=>RoleForgePokemon.world().settings.motion!==false))await click('motion-toggle');
  const protectedState=()=>p.evaluate(()=>{const w=RoleForgePokemon.world();return JSON.stringify({party:w.party,pokemon:w.pokemon,box:w.box,inventory:w.inventory,battle:w.battle,encounters:w.encounters,logs:w.logs});});const before=await protectedState();
  await browse();assert.equal(await app().locator('.pk-pokemon-sprite').count(),0,'Legacy preference defaults to Artwork');
- for(const theme of ['original','classic-dark']){
+ for(const theme of ['kinetic','original','classic-dark']){
   await open('settings');await click('theme-set','[data-theme="'+theme+'"]');await click('dex-image-set','[data-mode="artwork"]');await browse();await shot(theme+'-artwork');
   await open('settings');await click('dex-image-set','[data-mode="sprite"]');assert.equal(await app().locator('[data-pk-action=dex-image-set][data-mode=sprite]').getAttribute('aria-pressed'),'true');
   for(const width of mobile?[320,390]:[1280,1920]){await p.setViewportSize({width,height:mobile?844:width===1280?720:1080});assert(!(await app().locator('.pk-main').evaluate(n=>n.scrollWidth>n.clientWidth+1)),'Settings fits '+width);}

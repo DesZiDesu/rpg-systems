@@ -89,5 +89,6 @@ test('scene participants show Pokémon names, never internal speaker ids',async(
  const {participantName}=await import('../src/scene-tracker.js');
  const profiles=[{id:'pokemon:initial-0',name:'Nyaju',aliases:['pokemon:initial-0','pokemon:old-0']}];
  assert.equal(participantName('pokemon:initial-0',profiles),'Nyaju');assert.equal(participantName('pokemon:old-0',profiles),'Nyaju');
- assert.equal(participantName('pokemon:gone',[]),'Pokémon');assert.equal(participantName('Canari',profiles),'Canari');
+ assert.equal(participantName('pokemon:gone',[]),'Pokémon');
+ assert.deepEqual(['Canari','pokemon:initial-0'].map(name=>participantName(name,profiles)),['Canari','Nyaju']);assert.equal(participantName('Canari',profiles),'Canari');
 });

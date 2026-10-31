@@ -1,7 +1,7 @@
 // Keep the native OS picker and form events, with a stable square swatch.
 export function mountColorControls(root){
  if(!root)return;const doc=root.ownerDocument||root;
- if(!doc.querySelector('link[data-rf-color-controls]')){const sheet=doc.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/color-controls.css?v=0.92.0',import.meta.url);sheet.dataset.rfColorControls='';doc.head.append(sheet);}
+ if(!doc.querySelector('link[data-rf-color-controls]')){const sheet=doc.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('../styles/color-controls.css?v=0.93.0',import.meta.url);sheet.dataset.rfColorControls='';doc.head.append(sheet);}
  const inputs=root.matches?.('input[type=color]')?[root]:root.querySelectorAll('input[type=color]');
  for(const input of inputs){
   if(input.closest('.dn-eye-color'))continue;

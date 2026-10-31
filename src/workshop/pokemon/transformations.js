@@ -1,5 +1,5 @@
-import {specimenStats} from './specimens.js?v=0.92.0';
-import {TRANSFORMATION_DATA as DATA} from './transformation-data.js?v=0.92.0';
+import {specimenStats} from './specimens.js?v=0.93.0';
+import {TRANSFORMATION_DATA as DATA} from './transformation-data.js?v=0.93.0';
 
 export const TRANSFORMATION_SYSTEMS={mega:'Mega Evolution',primal:'Primal Reversion',ultra:'Ultra Burst',dynamax:'Dynamax',gigantamax:'Gigantamax',tera:'Terastallization',zmove:'Z-Moves',fusion:'Fusion',forms:'Form change',automatic:'Ability & battle forms'};
 export const TERA_TYPES=['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy','stellar'];

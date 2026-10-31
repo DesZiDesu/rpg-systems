@@ -1,5 +1,5 @@
-import {recoverLocationGeography} from './location-memory.js?v=0.92.0';
-import {normalizeChatAppearance} from './chat-themes.js?v=0.92.0';
+import {recoverLocationGeography} from './location-memory.js?v=0.93.0';
+import {normalizeChatAppearance} from './chat-themes.js?v=0.93.0';
 // Small, per-reply scene records; the host may complete omitted scene details.
 const value = (source, limit = 180) => typeof source === 'string' ? source.trim().slice(0, limit) : '';
 const known = source => source && !/^(?:unknown|none|n\/a|unspecified|not specified|not known|undefined|null|tbd|ไม่ทราบ|ไม่ระบุ|ไม่รู้|—|–|-|\?|…|\.{2,})$/i.test(source) ? source : '';
@@ -115,7 +115,7 @@ function node(tag, className = '', content = '') {
 // Pokémon speak as pokemon:<uid>; show the name the player knows instead.
 export function participantName(name, profiles = globalThis.RoleForgePokemon?.chatProfiles?.() || []) {
     if (typeof name !== 'string' || !name.startsWith('pokemon:')) return name;
-    const match = profiles.find(profile => profile.id === name || profile.aliases?.includes(name));
+    const match = (Array.isArray(profiles) ? profiles : []).find(profile => profile.id === name || profile.aliases?.includes(name));
     return match?.name || 'Pokémon';
 }
 export function renderSceneTracker(snapshot, language = 'en', appearance = {}) {
@@ -150,7 +150,7 @@ export function renderSceneTracker(snapshot, language = 'en', appearance = {}) {
     }
     const people = node('div', 'trpg-scene-people');
     people.append(node('small', '', word('IN SCENE', 'ในฉาก')),
-        node('strong', '', snapshot.participants?.map(participantName).join(', ') || '—'));
+        node('strong', '', snapshot.participants?.map(name => participantName(name)).join(', ') || '—'));
     const details = node('details', 'trpg-scene-details'), summary = node('summary', '', word('Scene details', 'ดูรายละเอียดทั้งหมด'));
     if (snapshot.elapsed) summary.append(node('span', '', ` · ${snapshot.elapsed}`));
     const fields = node('dl');

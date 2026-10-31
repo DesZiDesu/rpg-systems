@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.92.0",
+      "minimumRoleForge": "0.93.0",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -624,6 +624,17 @@
             "ออกแบบหน้าตาใหม่ทั้งหมด (Kinetic) ไอคอน Lucide และแอนิเมชันทุกหน้า",
             "มือถือมีแถบเมนูด้านล่าง ปุ่มขนาดนิ้วโป้ง และรองรับขอบจอ iPhone/Android",
             "ปาบอลเรียกออก-เก็บกลับ เอฟเฟกต์ท่าและสถานะ และขนาดโปเกมอนในฉากสู้ที่สมจริงขึ้น"
+          ]
+        },
+        {
+          "version": "2.0.0",
+          "path": "packs/pokemon-2.0.0.json",
+          "sha256": "5fb7d5cea3194dd287666309945b24687c951f296ca67d8afa86f50f656b643d",
+          "bytes": 1265,
+          "changes": [
+            "ประลองคู่ (Double battle) เมื่อเทรนเนอร์สองคนท้าพร้อมกันในโรล",
+            "Header โปเกมอนในแชทแบบไร้กรอบ และธีมแชท Pokémon League กลางวัน/กลางคืน",
+            "โหมดมืด ช่องกระเป๋า กล่องแบบตาราง ชุดทีม ความคืบหน้า Pokédex สรุปผลการต่อสู้ ฉากจับและวิวัฒนาการ"
           ]
         }
       ]

@@ -1,0 +1,31 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.93.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.0.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "double-battles",
+      "title": "Double battles",
+      "text": "Two story trainers who name each other as partners start one double battle: your first two healthy Pokémon against one Pokémon from each trainer. Each of your Pokémon picks a move and a target; all four act by priority and Speed."
+    },
+    {
+      "id": "chat",
+      "title": "Frameless Pokémon chat and Pokémon League themes",
+      "text": "Pokémon headers, narration and lines no longer use frames and blend into the SillyTavern background. RoleForge chat themes gain Pokémon League · Day and · Night."
+    },
+    {
+      "id": "window",
+      "title": "Kinetic dark mode and new screens",
+      "text": "Kinetic follows the device or a chosen Light/Dark mode. Bag pockets, a Storage box grid with pick-up bar, team presets, Pokédex completion, a post-battle summary, catch and evolution scenes, swipe and pull-to-close gestures and optional vibration on Android."
+    }
+  ]
+}

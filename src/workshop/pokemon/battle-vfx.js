@@ -49,7 +49,7 @@ export function battleSteps(before,after,event,dex){
    steps.push({kind:'status',side:row.key==='player-hit'?'ally':'foe',battle:current,status:HELD[row.blocked]});
   }else if(row.key==='player-hit'||row.key==='enemy-hit'){
    const attacker=row.key==='player-hit'?'ally':'foe',defender=attacker==='ally'?'foe':'ally',move=moves.get(row.move)||{},self=SELF_TARGETS.has(move.target);
-   steps.push({kind:'hit',side:attacker,target:self?attacker:defender,battle:current,move:row.move||'',type:move.type||'normal',category:move.class===2?'physical':move.class===3?'special':'status',
+   steps.push({kind:'hit',side:attacker,target:self?attacker:defender,battle:current,actorName:row.name||'',targetName:self?row.name||'':row.target||'',move:row.move||'',type:move.type||'normal',category:move.class===2?'physical':move.class===3?'special':'status',
     damage:Number(row.damage)||0,crit:Boolean(row.crit),miss:Boolean(row.miss),blocked:row.blocked||'',hearts:HEARTS.has(row.move),
     status:STATUS.has(row.status)?row.status:'',stages:(row.stageChanges||[]).map(([stat,delta])=>({stat,delta,side:self||delta>0?attacker:defender})),healed:Number(row.healed)||0});
   }else if(row.key==='battle-effect'&&STATUS.has(row.cause)){
@@ -91,7 +91,10 @@ function stageEffect(layer,delta,delay){const box=node('div','pkv-stage '+(delta
 
 // Draw one step inside the battle field; returns the elements to remove.
 export function drawStep(stage,step,{ballUrl,language=()=>'en'}={}){
- const th=language()==='th',actors={ally:stage.querySelector('.pk-ally-art'),foe:stage.querySelector('.pk-foe-art')},added=[],marked=[];
+ const th=language()==='th',added=[],marked=[];
+ // In a double battle each side has two actors; pick the one the log names.
+ const pick=(side,name)=>[...stage.querySelectorAll('.pk-'+side+'-art')].find(n=>name&&n.dataset.pkName===name)||stage.querySelector('.pk-'+side+'-art');
+ const actors={ally:pick('ally',step.side==='ally'?step.actorName:step.target==='ally'?step.targetName:''),foe:pick('foe',step.side==='foe'?step.actorName:step.target==='foe'?step.targetName:'')};
  const mark=(el,cls)=>{if(el){el.classList.add(cls);marked.push([el,cls]);}};
  for(const actor of Object.values(actors))actor?.style.setProperty('--pkv-dir',mirrored(actor)?-1:1);
  const layer=side=>{const actor=actors[side];if(!actor)return null;const l=layerFor(actor);added.push(l);return l;};

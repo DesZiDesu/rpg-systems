@@ -1,0 +1,70 @@
+/* Pokémon League · Day (pokemon) and Night (pokemon-dark) chat themes.
+   Trainer-card nameplate with a Poké Ball portrait ring, the classic game
+   text box with a name tab and a ▼ prompt, and frameless narration. Parent
+   containers stay transparent so SillyTavern's background shows through.
+   Pokémon speakers keep their own frameless header from pokemon-chat.css.
+   P = both themes, N = Night only. */
+P{--pl-ink:#1b2333;--pl-box:#fbfcfe;--pl-box-edge:#2d3a57;--pl-box-inner:#dfe6f1;--pl-tab:#e3353d;--pl-tab-ink:#fff;--pl-prompt:#e3353d;--pl-ring-a:#e3353d;--pl-ring-b:#f4f6fa;--pl-ring-line:#1b2333;--pl-chip:color-mix(in srgb,var(--SmartThemeBodyColor,#ddd) 12%,transparent);--pl-display:PKChat,var(--mainFontFamily,system-ui),sans-serif;--pl-muted:color-mix(in srgb,var(--SmartThemeBodyColor,#ddd) 62%,transparent)}
+N{--pl-ink:#eef2f8;--pl-box:#131b2b;--pl-box-edge:#4b5d82;--pl-box-inner:#0b1120;--pl-tab:#f5b700;--pl-tab-ink:#1b1400;--pl-prompt:#f5b700;--pl-ring-a:#e3353d;--pl-ring-b:#1b2333;--pl-ring-line:#c9d3e3}
+
+/* ── Header: trainer card, no plate ─────────────────────────────────── */
+P .trpg-header:not([data-pokemon-chat]){display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:4px 16px;min-height:0;padding:6px 0!important;color:var(--SmartThemeBodyColor,#ddd)}
+P .trpg-header:not([data-pokemon-chat]):not(:has(.trpg-photo)){grid-template-columns:minmax(0,1fr) auto}
+P .trpg-header:not([data-pokemon-chat]) .trpg-photo{grid-row:1/span 2;width:var(--portrait,72px);height:var(--portrait,72px);margin:4px;border-radius:50%;object-fit:cover;border:3px solid transparent;outline:0;background:conic-gradient(var(--pl-ring-a) 0 50%,var(--pl-ring-b) 50% 100%) border-box;box-shadow:0 0 0 2px var(--pl-ring-line),0 6px 14px #0004;-webkit-mask:none}
+P .trpg-header:not([data-pokemon-chat]) .trpg-identity{gap:4px}
+P .trpg-header:not([data-pokemon-chat]) .trpg-role{gap:7px;font:600 11px/1.4 var(--pl-display);letter-spacing:.14em;text-transform:uppercase;color:var(--pl-muted)}
+P .trpg-header:not([data-pokemon-chat]) .trpg-role>i,P .trpg-header:not([data-pokemon-chat]) .trpg-role .trpg-role-art{color:var(--speaker);filter:none}
+P .trpg-header:not([data-pokemon-chat]) .trpg-identity>strong{font:700 28px/1.15 var(--pl-display);letter-spacing:.01em;color:var(--SmartThemeBodyColor,#eee);background:none;-webkit-text-fill-color:currentColor;text-shadow:none;animation:none}
+P .trpg-header:not([data-pokemon-chat]) .trpg-identity>strong:after{content:'';display:block;width:42px;height:3px;margin-top:5px;border-radius:3px;background:linear-gradient(90deg,var(--speaker) 0 60%,var(--pl-tab) 60%)}
+P .trpg-header-badge{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font:600 11px/1.5 var(--pl-display);letter-spacing:.08em;color:var(--pl-muted)}
+P .trpg-header-badge>span{text-transform:uppercase}
+P .trpg-header-badge>strong{padding:0 8px;border-radius:999px;background:var(--pl-tab);color:var(--pl-tab-ink);font:700 11px/1.6 var(--pl-display);-webkit-text-fill-color:currentColor;text-shadow:none;animation:none}
+P .trpg-meta{gap:5px;color:var(--pl-muted)}
+P .trpg-meta span+span{border:0;padding-left:0}
+P .trpg-meta>span{padding:1px 9px;border-radius:999px;background:var(--pl-chip);font-size:11px;line-height:1.6}
+P .trpg-open-record{display:flex;align-items:center;gap:6px;opacity:.75;font-size:15px;color:var(--speaker)}
+P .trpg-open-record>small{font:600 10px var(--pl-display);letter-spacing:.1em;text-transform:uppercase;color:var(--pl-muted)}
+P .trpg-header:not([data-pokemon-chat]):hover .trpg-photo{transform:rotate(-8deg);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+P .trpg-speaker-label:not([data-pokemon-chat]){font:700 15px/1.4 var(--pl-display);color:var(--speaker)}
+P .trpg-user-header{border:0;padding:4px 0 6px;margin-bottom:6px}
+P .trpg-user-header>strong{font:700 20px/1.3 var(--pl-display);letter-spacing:.02em;color:var(--SmartThemeBodyColor,#eee)}
+P .trpg-user-header>small{font:600 10px var(--pl-display);letter-spacing:.14em;color:var(--pl-muted)}
+
+/* ── Dialogue: the game text box ────────────────────────────────────── */
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat]){position:relative;isolation:isolate;margin:14px 2px 4px;padding:18px 26px 22px;border:3px solid var(--pl-box-edge);border-radius:12px;background:var(--pl-box);box-shadow:inset 0 0 0 3px var(--pl-box-inner),0 4px 0 color-mix(in srgb,var(--pl-box-edge) 55%,transparent);color:var(--pl-ink);font-size:16px;line-height:1.75}
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat]):before{content:'';position:absolute;left:auto;top:auto;right:14px;bottom:8px;width:0;height:0;border:6px solid transparent;border-top:8px solid var(--pl-prompt);border-bottom:0;opacity:1;text-shadow:none;font:inherit;animation:pl-prompt 1s steps(2,jump-none) infinite}
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat]):after{display:none}
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat])>.trpg-dialogue-label{position:absolute;left:16px;top:-14px;margin:0;padding:2px 14px;max-width:calc(100% - 32px);border:0;border-radius:999px;background:var(--pl-tab);color:var(--pl-tab-ink);font:700 12px/1.6 var(--pl-display);letter-spacing:.08em;box-shadow:0 2px 0 color-mix(in srgb,var(--pl-tab) 50%,#000);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat])>.trpg-dialogue-copy{display:block;color:var(--pl-ink);white-space:pre-wrap}
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat])>.trpg-dialogue-copy q{color:inherit}
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat]) .rf-voice-dialogue-controls{color:var(--pl-ink);border-color:color-mix(in srgb,var(--pl-ink) 20%,transparent)}
+P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat]) :is(.rf-voice-play,.rf-voice-button){color:var(--pl-ink);border-color:color-mix(in srgb,var(--pl-ink) 35%,transparent)}
+P.trpg-user-chat .trpg-dialogue:not(.trpg-unframed)>.trpg-dialogue-label{left:auto;right:16px}
+P.trpg-user-chat .trpg-dialogue:not(.trpg-unframed){text-align:left}
+
+/* ── Narrative: no frame, a quiet Poké Ball bullet ──────────────────── */
+P .trpg-narrative:not([data-pokemon-chat]){padding:4px 2px 4px 30px;background:none;box-shadow:none;line-height:1.9;color:var(--prose)}
+P .trpg-narrative:not([data-pokemon-chat]):before{content:'';position:absolute;left:6px;top:.7em;bottom:auto;inset-inline-end:auto;width:12px;height:12px;border-radius:50%;background:linear-gradient(var(--pl-ring-a) 0 45%,var(--pl-ring-line) 45% 55%,var(--pl-ring-b) 55%);box-shadow:0 0 0 1.5px var(--pl-ring-line);opacity:.8}
+P .trpg-narrative:not([data-pokemon-chat]):after,P .trpg-narrative:not([data-pokemon-chat]) :is(.trpg-prose-mark,.trpg-prose-top,.trpg-prose-glow,.trpg-prose-end){display:none}
+P .trpg-narrative:not([data-pokemon-chat])>.trpg-prose-copy{padding-top:0;text-shadow:none}
+P.trpg-user-chat .trpg-narrative:not([data-pokemon-chat]){padding:4px 30px 4px 2px}
+P.trpg-user-chat .trpg-narrative:not([data-pokemon-chat]):before{left:auto;right:6px}
+
+/* ── Motion ─────────────────────────────────────────────────────────── */
+P.trpg-effects.trpg-entrance .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat]){animation:pl-box .38s cubic-bezier(.2,.8,.2,1) both}
+P.trpg-effects.trpg-entrance .trpg-header:not([data-pokemon-chat]) .trpg-photo{animation:pl-spin .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pl-prompt{50%{transform:translateY(3px)}}
+@keyframes pl-box{from{opacity:0;transform:translateY(8px) scale(.98)}}
+@keyframes pl-spin{from{opacity:0;transform:rotate(-180deg) scale(.6)}}
+@media(prefers-reduced-motion:reduce){P *{animation:none!important;transition:none!important}}
+
+@container(max-width:460px){
+ P .trpg-header:not([data-pokemon-chat]){column-gap:12px}
+ P .trpg-header:not([data-pokemon-chat]) .trpg-identity>strong{font-size:22px}
+ P .trpg-header:not([data-pokemon-chat]) .trpg-role{font-size:10px;letter-spacing:.1em}
+ P .trpg-open-record{display:none}
+ P .trpg-dialogue:not(.trpg-unframed):not([data-pokemon-chat]){padding:16px 18px 20px;font-size:15px;border-radius:10px}
+ P .trpg-narrative:not([data-pokemon-chat]){padding-left:24px;font-size:15px}
+ P .trpg-narrative:not([data-pokemon-chat]):before{left:3px;width:10px;height:10px}
+}
+P [data-pokemon-chat=header] .pkc-name{font-family:var(--pl-display)}

@@ -860,3 +860,135 @@
 #roleforge-pokemon[data-pk-layout=dossier] .pkv-splash .pkv-p{border-radius:0 50% 50% 50%!important}
 #roleforge-pokemon[data-pk-layout=dossier] .pkv-leaf .pkv-p{border-radius:0 100% 0 100%!important}
 .rfpk .pkv-paralysis i{width:9px!important;height:34px!important}
+/* Catch result line, shown when the ball clicks or breaks open. */
+.rfpk .pkm-catch-caption{position:absolute;z-index:12;left:50%;bottom:6%;max-width:88%;padding:6px 14px;transform:translate(-50%,8px);opacity:0;background:#0f1b2dee;color:#fff;font:600 clamp(12px,2.4cqw,16px)/1.4 PKKinetic,PKArchive,PKArchiveThai,system-ui,sans-serif;letter-spacing:.02em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s,transform .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.rfpk .pkm-catch-caption.is-shown{opacity:1;transform:translate(-50%,0)}
+/* Evolution scene: fills the open window, theme independent. */
+.rfpk .pk-evo-scene{position:absolute;inset:0;z-index:80;display:grid;place-content:center;justify-items:center;gap:18px;padding:24px 16px max(24px,env(safe-area-inset-bottom));background:radial-gradient(circle at 50% 42%,#1e3a5f 0,#0b1220 62%);color:#fff;animation:pk-evo-in .35s ease-out both}
+.rfpk .pk-evo-scene.is-leaving{animation:pk-evo-out .26s ease-in forwards}
+.rfpk .pk-evo-stage{position:relative;display:grid;place-items:center;width:min(300px,70vw);aspect-ratio:1}
+.rfpk .pk-evo-rays{position:absolute;inset:-20%;border-radius:50%;background:repeating-conic-gradient(#ffffff14 0 8deg,transparent 8deg 22deg);animation:pk-evo-spin 6s linear infinite;mask:radial-gradient(circle,#000 30%,transparent 70%)}
+.rfpk .pk-evo-art{position:absolute;inset:12%;display:grid;place-items:center}
+.rfpk .pk-evo-art img{width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1) drop-shadow(0 0 14px #fff) drop-shadow(0 0 30px #9fd3ff);transition:filter .6s}
+.rfpk .pk-evo-from{animation:pk-evo-a 4.1s cubic-bezier(.4,0,.6,1) .5s both}
+.rfpk .pk-evo-to{animation:pk-evo-b 4.1s cubic-bezier(.4,0,.6,1) .5s both}
+.rfpk .pk-evo-flash{position:absolute;inset:-40%;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff8 35%,transparent 65%);opacity:0;animation:pk-evo-flash .9s ease-out 4s both;pointer-events:none}
+.rfpk .pk-evo-scene.is-done .pk-evo-art img{filter:drop-shadow(0 10px 18px #0008)}
+.rfpk .pk-evo-scene.is-done .pk-evo-to{animation:pk-evo-pop .6s cubic-bezier(.34,1.56,.64,1) both;opacity:1}
+.rfpk .pk-evo-scene.is-done .pk-evo-from{opacity:0;animation:none}
+.rfpk .pk-evo-text{margin:0;max-width:30em;text-align:center;font:600 clamp(15px,2.2vw,20px)/1.45 PKKinetic,PKArchive,PKArchiveThai,system-ui,sans-serif;letter-spacing:.02em;color:#fff}
+.rfpk .pk-evo-close{min-width:120px;min-height:44px;opacity:0;pointer-events:none;transition:opacity .3s}
+.rfpk .pk-evo-scene.is-done .pk-evo-close{opacity:1;pointer-events:auto}
+@keyframes pk-evo-in{from{opacity:0}}
+@keyframes pk-evo-out{to{opacity:0}}
+@keyframes pk-evo-spin{to{transform:rotate(1turn)}}
+@keyframes pk-evo-flash{0%{opacity:0;transform:scale(.4)}40%{opacity:1}100%{opacity:0;transform:scale(1.6)}}
+@keyframes pk-evo-pop{from{transform:scale(.6)}}
+@keyframes pk-evo-a{0%,8%{opacity:1;transform:scale(1)}16%{opacity:0;transform:scale(.7)}26%{opacity:1;transform:scale(1)}36%{opacity:0;transform:scale(.7)}44%{opacity:1;transform:scale(1)}51%{opacity:0}57%{opacity:1}62%{opacity:0}67%{opacity:1}71%{opacity:0}75%{opacity:1}78%{opacity:0}81%{opacity:1}84%{opacity:0}87%{opacity:1}90%,100%{opacity:0}}
+@keyframes pk-evo-b{0%,8%{opacity:0;transform:scale(.7)}16%{opacity:1;transform:scale(1)}26%{opacity:0;transform:scale(.7)}36%{opacity:1;transform:scale(1)}44%{opacity:0}51%{opacity:1}57%{opacity:0}62%{opacity:1}67%{opacity:0}71%{opacity:1}75%{opacity:0}78%{opacity:1}81%{opacity:0}84%{opacity:1}87%{opacity:0}90%,100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-evo-scene *{animation:none!important}.rfpk .pk-evo-to{opacity:1}.rfpk .pk-evo-from{opacity:0}}
+/* Bag pockets: one scrollable row of tabs on every theme. */
+.rfpk .pk-pockets{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin:4px 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rfpk .pk-pockets::-webkit-scrollbar{display:none}
+.rfpk .pk-pocket{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;font-weight:600;white-space:nowrap}
+.rfpk .pk-pocket small{font-size:11px;opacity:.7}
+.rfpk .pk-pocket[aria-selected=true]{background:var(--pk-text);color:var(--pk-panel);border-color:var(--pk-text)}
+/* Storage: party strip, box grid and a sticky pick-up bar. */
+.rfpk .pk-storage-party{display:grid;gap:8px;margin-bottom:14px}
+.rfpk .pk-slot-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.rfpk .pk-box-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 10px}
+.rfpk .pk-box-nav strong{flex:1;text-align:center;font-size:17px}
+.rfpk .pk-box-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.rfpk .pk-slot{position:relative;display:grid;place-items:center;aspect-ratio:1;min-width:0;min-height:44px;padding:4px;border:2px solid var(--pk-line);background:var(--pk-panel);transition:transform .16s,border-color .2s}
+.rfpk .pk-slot.is-empty{background:transparent;border-style:dashed;opacity:.6}
+.rfpk .pk-slot img{width:100%;height:100%;object-fit:contain}
+.rfpk .pk-slot.is-held{border-color:var(--pk-red)}
+.rfpk .pk-slot.is-held img{animation:pk-slot-held 1.1s ease-in-out infinite}
+.rfpk .pk-slot.is-fainted img{filter:grayscale(1);opacity:.55}
+.rfpk .pk-box-hint{margin-top:10px;text-align:center}
+.rfpk .pk-storage-bar{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;background:#0f1b2d;color:#fff;box-shadow:0 -6px 20px #0003;animation:pk-bar-up .38s cubic-bezier(.34,1.56,.64,1) both}
+.rfpk .pk-storage-bar-art{width:44px;height:44px;flex:none}
+.rfpk .pk-storage-bar-art img{width:100%;height:100%;object-fit:contain}
+.rfpk .pk-storage-bar-copy{flex:1;min-width:0;display:grid}
+.rfpk .pk-storage-bar-copy strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rfpk .pk-storage-bar-copy small{opacity:.8;font-size:12px}
+.rfpk .pk-storage-bar button.pk-icon{background:transparent;border-color:#ffffff40;color:#fff}
+.rfpk .pk-storage-bar button.pk-primary{min-height:44px;padding:0 16px}
+@keyframes pk-slot-held{50%{transform:translateY(-5px)}}
+@keyframes pk-bar-up{from{transform:translateY(100%);opacity:0}}
+@media(max-width:700px){.rfpk .pk-box-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.rfpk .pk-slot-row{gap:6px}}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-slot.is-held img,.rfpk .pk-storage-bar{animation:none}}
+/* Post-battle summary card at the top of Journey. */
+.rfpk .pk-battle-summary{position:relative;margin:0 0 16px;padding:14px 16px;background:var(--pk-panel);border:1px solid var(--pk-line);border-top:4px solid var(--pk-green);animation:pk-summary-in .5s cubic-bezier(.34,1.56,.64,1) both}
+.rfpk .pk-battle-summary:is([data-result=defeat],[data-result=trainer-defeat]){border-top-color:var(--pk-red)}
+.rfpk .pk-battle-summary[data-result=run]{border-top-color:var(--pk-blue)}
+.rfpk .pk-battle-summary[data-result=caught]{border-top-color:var(--pk-yellow)}
+.rfpk .pk-battle-summary>header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 10px}
+.rfpk .pk-battle-summary>header h2{grid-column:1;margin:2px 0 0;font-size:24px}
+.rfpk .pk-battle-summary>header .pk-icon{grid-column:2;grid-row:1/span 2}
+.rfpk .pk-summary-rows{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.rfpk .pk-summary-rows li{display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid var(--pk-line);animation:pk-summary-row .4s ease-out both}
+.rfpk .pk-summary-rows li:nth-child(2){animation-delay:.08s}.rfpk .pk-summary-rows li:nth-child(3){animation-delay:.16s}.rfpk .pk-summary-rows li:nth-child(n+4){animation-delay:.24s}
+.rfpk .pk-summary-art{width:44px;height:44px;flex:none}
+.rfpk .pk-summary-art img{width:100%;height:100%;object-fit:contain}
+.rfpk .pk-summary-copy{flex:1;min-width:0;display:grid}
+.rfpk .pk-summary-copy small{color:var(--pk-muted)}
+.rfpk .pk-summary-copy em{font-style:normal;font-size:13px;color:var(--pk-green)}
+.rfpk .pk-summary-up{padding:2px 8px;background:var(--pk-yellow);color:#1b1400;font-size:12px;animation:pk-summary-up 1.2s ease-in-out 2}
+.rfpk .pk-summary-foot{margin:10px 0 0;font-size:13px;color:var(--pk-muted)}
+@keyframes pk-summary-in{from{opacity:0;transform:translateY(-10px) scale(.97)}}
+@keyframes pk-summary-row{from{opacity:0;transform:translateX(-10px)}}
+@keyframes pk-summary-up{50%{transform:translateY(-3px) scale(1.08)}}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-battle-summary,.rfpk .pk-battle-summary *{animation:none!important}}
+/* Pokédex completion panel. */
+.rfpk .pk-completion{margin:0 0 14px;padding:14px;background:var(--pk-panel);border:1px solid var(--pk-line);animation:pk-summary-in .45s ease-out both}
+.rfpk .pk-completion h3{margin:14px 0 8px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--pk-muted)}
+.rfpk .pk-completion-overall{display:flex;align-items:center;gap:16px}
+.rfpk .pk-completion-overall strong{display:block;font-size:24px}
+.rfpk .pk-completion-overall small{color:var(--pk-muted)}
+.rfpk .pk-completion-ring{--pct:0;position:relative;display:grid;place-items:center;width:84px;height:84px;flex:none;border-radius:50%;background:conic-gradient(var(--pk-red) calc(var(--pct)*1%),var(--pk-line) 0);animation:pk-ring-in 1s ease-out both}
+.rfpk .pk-completion-ring:before{content:'';position:absolute;inset:9px;border-radius:50%;background:var(--pk-panel)}
+.rfpk .pk-completion-ring b{position:relative;font-size:15px}
+.rfpk .pk-completion-regions{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.rfpk .pk-completion-region{display:grid;gap:6px;min-height:52px;padding:8px 10px;text-align:left}
+.rfpk .pk-completion-label{display:flex;justify-content:space-between;gap:8px}
+.rfpk .pk-completion-label small{color:var(--pk-muted)}
+.rfpk .pk-completion-bar{position:relative;display:block;height:6px;background:var(--pk-line);overflow:hidden}
+.rfpk .pk-completion-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--pk-red);transform-origin:left;animation:pk-bar-grow .9s cubic-bezier(.2,.8,.2,1) both}
+.rfpk .pk-completion-bar i.is-seen{background:color-mix(in srgb,var(--pk-red) 30%,transparent)}
+.rfpk .pk-completion-types{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.rfpk .pk-completion-type{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 8px;min-height:48px;padding:6px 8px}
+.rfpk .pk-completion-type .pk-completion-bar{grid-column:1/-1}
+.rfpk .pk-completion-type small{font-size:12px;color:var(--pk-muted)}
+@keyframes pk-ring-in{from{opacity:0;transform:rotate(-90deg) scale(.8)}}
+@keyframes pk-bar-grow{from{transform:scaleX(0)}}
+@media(max-width:700px){.rfpk .pk-completion-regions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rfpk .pk-completion-types{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-completion,.rfpk .pk-completion *{animation:none!important}}
+/* Team presets. */
+.rfpk .pk-presets{margin-top:22px}
+.rfpk .pk-preset-list{display:grid;gap:8px}
+.rfpk .pk-preset{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--pk-panel);border:1px solid var(--pk-line)}
+.rfpk .pk-preset.is-current{border-color:var(--pk-green)}
+.rfpk .pk-preset-copy{flex:1;min-width:0;display:grid;gap:4px}
+.rfpk .pk-preset-mons{display:flex;flex-wrap:wrap;gap:2px}
+.rfpk .pk-preset-mons>span{width:34px;height:34px}
+.rfpk .pk-preset-mons img{width:100%;height:100%;object-fit:contain}
+.rfpk .pk-preset-actions{display:flex;gap:6px;flex:none}
+.rfpk .pk-preset-save{display:flex;gap:8px;margin-top:10px}
+.rfpk .pk-preset-save input{flex:1;min-width:0}
+@media(max-width:700px){.rfpk .pk-preset-save{display:grid}.rfpk .pk-preset{flex-wrap:wrap}.rfpk .pk-preset-actions{width:100%}.rfpk .pk-preset-actions .pk-primary{flex:1}}
+/* Double battles: the second pair stands beside the first. */
+.rfpk .pk-platform .pk-slot-b{position:absolute;inset:0;pointer-events:none}
+.rfpk .pk-platform-foe .pk-foe-art.pk-slot-b{transform:translate(-46%,-10%) scale(.78);z-index:-1}
+.rfpk .pk-platform-ally .pk-ally-art.pk-slot-b{transform:translate(52%,-6%) scale(.86);z-index:-1}
+.rfpk .pk-slot-b[data-pk-fainted]{opacity:0;transition:opacity .4s}
+.rfpk .pk-double-status{padding:4px 8px!important}
+.rfpk .pk-double-status h2{font-size:13px!important}
+.rfpk .pk-double-status .pk-hp>div{display:none}
+.rfpk .pk-double-status.is-fainted{opacity:.5}
+.rfpk .pk-foe-status-b{position:absolute;left:3%;top:30%;width:min(34%,230px);z-index:4}
+.rfpk .pk-ally-status-b{position:absolute;right:3%;bottom:2%;width:min(30%,210px);z-index:4}
+.rfpk .pk-double-step{margin:2px 0 8px;font-size:14px}
+.rfpk .pk-double-step small{opacity:.7}
+.rfpk .pk-double-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.rfpk .pk-double-slots{display:flex;gap:8px;margin:0 0 8px;overflow-x:auto}

@@ -1,7 +1,7 @@
 /* Kinetic: the default Pokémon theme. Flat panels, hard offset shadows,
    one red accent, Chakra Petch display type and Lucide line icons.
    Everything is scoped to data-pk-theme=kinetic so Original and Aperture
-   are untouched. The dock gets the same treatment. */
+   are untouched. */
 @font-face{font-family:PKKinetic;src:url('../src/workshop/pokemon/fonts/chakra-petch-600-latin.woff2') format('woff2');font-weight:600;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:PKKinetic;src:url('../src/workshop/pokemon/fonts/chakra-petch-700-latin.woff2') format('woff2');font-weight:700;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:PKKinetic;src:url('../src/workshop/pokemon/fonts/chakra-petch-600-thai.woff2') format('woff2');font-weight:600;font-display:swap;unicode-range:U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC}
@@ -10,6 +10,13 @@
 :is(#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic],#roleforge-pokemon-dock[data-pk-theme=kinetic]){--k-bg:#eef3f8;--k-panel:#fff;--k-soft:#f5f8fb;--k-ink:#0f1b2d;--k-muted:#56657a;--k-line:#d3dce8;--k-shadow:#c9d4e2;--k-red:#d92d20;--k-red-dark:#a8231a;--k-gold:#f5b700;--k-green:#16a34a;--k-ease:cubic-bezier(.2,.8,.2,1);--k-spring:cubic-bezier(.34,1.56,.64,1);--k-display:PKKinetic,PKArchive,PKArchiveThai,system-ui,sans-serif;--k-body:PKArchive,PKArchiveThai,system-ui,sans-serif;
  --pk-bg:var(--k-bg);--pk-panel:var(--k-panel);--pk-soft:var(--k-soft);--pk-line:var(--k-line);--pk-text:var(--k-ink);--pk-muted:var(--k-muted);--pk-gold:var(--k-red);--pk-green:#22c55e;--pk-red:#ef4444;--pk-blue:#2563eb;--pk-yellow:#eab308;
  color:var(--k-ink);background:var(--k-bg);font-family:var(--k-body);-webkit-tap-highlight-color:transparent}
+/* Night: same layout, midnight materials. */
+:is(#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic],#roleforge-pokemon-dock[data-pk-theme=kinetic])[data-pk-scheme=dark]{--k-bg:#0d141f;--k-panel:#152033;--k-soft:#1a2740;--k-ink:#eef3f8;--k-muted:#a9b6c7;--k-line:#2a3a52;--k-shadow:#060a12;--k-red:#ef4444;--k-red-dark:#991b1b;color-scheme:dark}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] .pk-battle-message{background:#060a12!important;box-shadow:0 0 0 1px var(--k-line)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] .pk-arena{filter:brightness(.92) saturate(.95)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] .pk-battle-status{background:#152033f2!important;color:var(--k-ink)!important;border-color:#2a3a52!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] .pk-battle-status :is(h2,strong,span,small){color:inherit}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] :is(.pk-item-sprite,.pk-dex-art img,.pk-mon-art img){filter:drop-shadow(0 4px 6px #0008)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic]{border:0!important;box-shadow:0 30px 80px #0f1b2d66!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] *,#roleforge-pokemon-dock[data-pk-theme=kinetic] *{border-radius:0}
 :is(#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic],#roleforge-pokemon-dock[data-pk-theme=kinetic]) .pk-type,:is(#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic],#roleforge-pokemon-dock[data-pk-theme=kinetic]) .pk-status-badge{border-radius:0}
@@ -80,7 +87,7 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] button.pk-link:hover svg{transform:translateX(3px)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] main button.pk-icon{display:inline-grid;place-items:center;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;background:var(--k-panel);color:var(--k-ink);border:1px solid var(--k-line);box-shadow:none}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] main button.pk-icon:hover:not(:disabled){border-color:var(--k-ink)}
-#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] main button.pk-icon[aria-pressed=true],#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] main button.pk-icon[aria-expanded=true]{background:var(--k-ink);color:#fff;border-color:var(--k-ink)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] main button.pk-icon[aria-pressed=true],#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] main button.pk-icon[aria-expanded=true]{background:var(--k-ink);color:var(--k-panel);border-color:var(--k-ink)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),select,textarea){min-height:44px;border-radius:0;border:1px solid var(--k-line)!important;background:var(--k-panel)!important;color:var(--k-ink)!important;font:500 15px var(--k-body);box-shadow:none!important;transition:border-color .2s}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(input,select,textarea):focus{border-color:var(--k-ink)!important;outline:0}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] select{padding:0 36px 0 12px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2356657a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 10px center!important;background-size:18px!important}
@@ -97,7 +104,7 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-exp .pk-track{height:4px!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-exp .pk-track i{background:#3b82f6!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-exp>span{font:600 11px var(--k-display);color:var(--k-muted)}
-#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-status-badge{padding:1px 6px;background:var(--k-ink);color:#fff;font:700 10px var(--k-display);letter-spacing:.06em}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-status-badge{padding:1px 6px;background:var(--k-ink);color:var(--k-panel);font:700 10px var(--k-display);letter-spacing:.06em}
 
 /* ── Cards: one family for every surface ───────────────────────────── */
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-mon-card,.pk-dex-card,.pk-bag-grid>article,.pk-preference-card,.pk-service-card,.pk-equipment-card,.pk-release-guide,.pk-trainer-metrics>div,.pk-medicine-card,.pk-training-choice,.pk-specimen,.pk-editor-section,.pk-settings-section,.pk-center-banner,.pk-gym-grid>*,.pk-quest-list>li,.pk-empty,.pk-detail-hero,.pk-detail-lower>*,.pk-starter,.pk-journey-hero,.pk-filter-panel,.pk-settings-reference,.pk-log li,.pk-form-change,.pk-evolution){border-radius:0!important;border:1px solid var(--k-line)!important;background:var(--k-panel)!important;box-shadow:4px 4px 0 var(--k-shadow)!important;color:var(--k-ink)}
@@ -153,7 +160,7 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-search input{width:100%;padding-left:42px!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-mode,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-image-mode,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-region-tabs{display:inline-flex;gap:0;padding:3px;background:var(--k-panel);border:1px solid var(--k-line)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-dex-mode,.pk-image-mode,.pk-region-tabs) button{min-height:38px;padding:0 14px;border:0!important;background:transparent!important;color:var(--k-ink)!important;box-shadow:none!important;font:600 13px var(--k-body)}
-#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-dex-mode,.pk-image-mode,.pk-region-tabs) button:is([aria-pressed=true],[aria-current=page],[aria-selected=true]){background:var(--k-ink)!important;color:#fff!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-dex-mode,.pk-image-mode,.pk-region-tabs) button:is([aria-pressed=true],[aria-current=page],[aria-selected=true]){background:var(--k-ink)!important;color:var(--k-panel)!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-card{position:relative;display:flex;flex-direction:column;align-items:stretch;padding:10px 12px 12px!important;text-align:left;overflow:hidden}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-card::before{content:'';display:block!important;position:absolute;left:0;top:0;right:0;width:auto;height:3px;border:0!important;background:var(--pk-card-type,var(--k-line))}
@@ -205,7 +212,7 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-settings-tools{display:grid;gap:8px}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-settings-tool{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;background:var(--k-soft)!important;border:1px solid var(--k-line)!important;box-shadow:none!important;text-align:left}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-settings-tool:hover{border-color:var(--k-ink)!important}
-#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-tool-icon{display:grid;place-items:center;width:32px;height:32px;background:var(--k-ink);color:#fff;flex:none}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-tool-icon{display:grid;place-items:center;width:32px;height:32px;background:var(--k-ink);color:var(--k-panel);flex:none}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-settings-reference{margin-top:16px;padding:0!important;box-shadow:none!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] button.pk-preference-action{min-height:44px;min-width:44px;padding:0 14px;border-radius:0;background:var(--k-panel);border:1px solid var(--k-line);color:var(--k-ink);box-shadow:none}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-settings-reference a{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--k-red)}
@@ -225,7 +232,7 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-status h2{font:700 15px/1.1 var(--k-display)!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-encounter-control{background:transparent!important;border:0!important;box-shadow:none!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-console{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
-#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-message{background:var(--k-ink)!important;color:#fff!important;border:0!important;border-radius:0!important;box-shadow:4px 4px 0 var(--k-shadow)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-message{background:#0f1b2d!important;color:#fff!important;border:0!important;border-radius:0!important;box-shadow:4px 4px 0 var(--k-shadow)!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-message p{color:#fff!important;font:500 14px/1.45 var(--k-body)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-game-caret{color:var(--k-gold)!important}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-command{position:relative;overflow:hidden;min-height:56px!important;border:0!important;border-radius:0!important;color:#fff!important;font:700 15px var(--k-display)!important;letter-spacing:.06em;text-transform:uppercase;box-shadow:inset 0 -4px 0 #0000002e!important;animation:k-rise calc(.4s*var(--k-m,1)) var(--k-ease) both}
@@ -266,8 +273,8 @@
 @keyframes k-spin-in{from{transform:rotate(-200deg) scale(.4);opacity:0}}
 @keyframes k-plate{from{opacity:0;transform:translateX(24px)}}
 @keyframes k-plate-l{from{opacity:0;transform:translateX(-24px)}}
-#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-field-motion=off] *,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-field-motion=off] *::before{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
-@media(prefers-reduced-motion:reduce){#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] *,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] *::before,#roleforge-pokemon-dock[data-pk-theme=kinetic] *{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-field-motion=off] :not(.pk-arena,.pk-arena *),#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-field-motion=off] :not(.pk-arena,.pk-arena *)::before{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] *,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] *::before,#roleforge-pokemon-dock[data-pk-theme=kinetic] *{animation:none!important;transition:none!important}}
 
 /* ── Tablet ────────────────────────────────────────────────────────── */
 @media(max-width:1050px) and (min-width:701px){
@@ -282,6 +289,13 @@
 /* Portrait tablets: use the whole screen instead of a letterboxed 16:9 window. */
 @media(min-width:701px) and (orientation:portrait){
  #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic]{--pk-window-width:calc(100vw - 32px);width:calc(100vw - 32px)!important;height:calc(var(--pk-vh,100dvh) - 32px)!important;aspect-ratio:auto!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-console{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-command-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-command{min-height:64px!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-arena{aspect-ratio:4/3!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-main:has(.pk-encounter-layout){display:flex;flex-direction:column}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-encounter-layout{flex:1 0 auto;display:flex!important;flex-direction:column;gap:14px}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-encounter-control{margin-top:auto!important;width:100%!important}
 }
 
 /* ── Phone: bottom tab bar, safe areas, thumb-sized targets ────────── */
@@ -377,3 +391,51 @@
 #roleforge-pokemon-dock[data-pk-theme=kinetic] button.pk-primary{background:var(--k-red)!important;border:0!important;border-radius:0!important;color:#fff!important;box-shadow:3px 3px 0 var(--k-red-dark)!important}
 #roleforge-pokemon-dock[data-pk-theme=kinetic] button.pk-quiet,#roleforge-pokemon-dock[data-pk-theme=kinetic] .pk-dock-actions button:not(.pk-primary){border-radius:0!important;background:var(--k-panel)!important;border:1px solid var(--k-line)!important;color:var(--k-ink)!important;box-shadow:none!important}
 #roleforge-pokemon-dock[data-pk-theme=kinetic] .pk-dock-mon{background:var(--k-bg)!important;background-image:none!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-location{background:var(--k-panel)!important;border:1px solid var(--k-line)!important;color:var(--k-muted)!important;border-radius:0!important;box-shadow:none!important}
+/* Secondary surfaces from the base sheet, moved onto Kinetic tokens so
+   they follow Light and Dark. */
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-main article:not(.pk-mon-card),#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-trainer-intro,.pk-soft-empty,.pk-owner-choice,.pk-held-empty,.pk-bridge-summary,.pk-toggle,.pk-center-banner){background:var(--k-panel)!important;color:var(--k-ink)!important;border-color:var(--k-line)!important;border-radius:0!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-main article :is(h2,h3,strong){color:var(--k-ink)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-main article :is(p,small){color:var(--k-muted)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-owner-choice[aria-pressed=true]{border-color:var(--k-red)!important;box-shadow:3px 3px 0 var(--k-red)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-badge-emblem{background:var(--k-soft)!important;border-color:var(--k-line)!important;color:var(--k-muted)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-support-badge{background:var(--k-soft)!important;color:var(--k-muted)!important;border-color:var(--k-line)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] button.pk-quiet{background:var(--k-panel)!important;color:var(--k-ink)!important;border-color:var(--k-line)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-type-filters,.pk-gen-filters,.pk-filter-chips,.pk-filter-panel) button:not([aria-pressed=true]):not(.pk-type){background:var(--k-panel)!important;color:var(--k-ink)!important;border-color:var(--k-line)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-type-filters,.pk-gen-filters,.pk-filter-chips,.pk-filter-panel) button[aria-pressed=true]{background:var(--k-ink)!important;color:var(--k-panel)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-move :is(em,small){color:var(--k-muted)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] button.pk-quiet[aria-pressed=true]{background:var(--k-ink)!important;color:var(--k-panel)!important;border-color:var(--k-ink)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-pocket{border-radius:0!important;background:var(--k-panel)!important;color:var(--k-ink)!important;border:1px solid var(--k-line)!important;box-shadow:none!important;font:600 14px var(--k-body)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-pocket[aria-selected=true]{background:var(--k-ink)!important;color:var(--k-panel)!important;border-color:var(--k-ink)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-pocket small{font:600 12px var(--k-display)}
+@media(max-width:700px){#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-pockets{margin-inline:-14px;padding-inline:14px}#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-pocket{min-height:44px}}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-slot{border-radius:0!important;background:var(--k-panel)!important;border:2px solid var(--k-line)!important;box-shadow:none!important;animation:k-pop calc(.38s*var(--k-m,1)) var(--k-spring) both}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-slot.is-empty{background:transparent!important;border:1px dashed var(--k-line)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-slot.is-held{border-color:var(--k-red)!important;box-shadow:3px 3px 0 var(--k-red)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-slot:active{transform:scale(.92)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-storage-party{padding:12px;background:var(--k-panel);border:1px solid var(--k-line);box-shadow:4px 4px 0 var(--k-shadow)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-storage-party .pk-slot{background:var(--k-bg)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-box-nav strong{font:700 18px var(--k-display)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-storage-bar{background:#0f1b2d;border-radius:0}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic][data-pk-scheme=dark] .pk-storage-bar{background:#060a12;box-shadow:0 0 0 1px var(--k-line),0 -6px 20px #0006}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-storage-bar button.pk-icon{border-radius:0!important;background:transparent!important;color:#fff!important;border:1px solid #ffffff40!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-summary{border-radius:0!important;background:var(--k-panel)!important;border:1px solid var(--k-line)!important;border-top:4px solid #16a34a!important;box-shadow:4px 4px 0 var(--k-shadow)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-summary:is([data-result=defeat],[data-result=trainer-defeat]){border-top-color:var(--k-red)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-summary[data-result=run]{border-top-color:#2563eb!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-summary[data-result=caught]{border-top-color:var(--k-gold)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-battle-summary h2{font:700 24px/1.1 var(--k-display)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-summary-rows li{border-top-color:var(--k-line)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-summary-copy strong{font:700 15px var(--k-display)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-summary-up{border-radius:0;font:700 12px var(--k-display);background:var(--k-gold)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-completion,.pk-preset){border-radius:0!important;background:var(--k-panel)!important;border:1px solid var(--k-line)!important;box-shadow:4px 4px 0 var(--k-shadow)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-preset.is-current{border-color:var(--k-ink)!important;box-shadow:4px 4px 0 var(--k-red)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion h3{font:600 11px var(--k-display);letter-spacing:.16em}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion-overall strong,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion-ring b,#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-preset-copy strong{font-family:var(--k-display)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion-ring{background:conic-gradient(var(--k-red) calc(var(--pct)*1%),var(--k-line) 0)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion-ring:before{background:var(--k-panel)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-completion-region,.pk-completion-type){border-radius:0!important;background:var(--k-bg)!important;border:1px solid var(--k-line)!important;box-shadow:none!important;color:var(--k-ink)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-completion-region,.pk-completion-type)[aria-pressed=true]{border-color:var(--k-red)!important;box-shadow:inset 3px 0 0 var(--k-red)!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion-bar{background:var(--k-line)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion-bar i{background:var(--k-red)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-double-step strong{font-family:var(--k-display)}
+@media(max-width:700px){#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-foe-status-b{top:28%;width:40%}#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-ally-status-b{width:40%;bottom:30%;right:2%}}

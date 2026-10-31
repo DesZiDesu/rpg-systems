@@ -1,8 +1,8 @@
-import {executeMove as legacyMove,effectiveStat as legacyStat,applyStatus as legacyStatus,supportedMove as legacySupported} from './legacy-battle-rules.js?v=0.92.0';
-import {TRANSFORMATION_DATA} from './transformation-data.js?v=0.92.0';
-import {battleMove,battleTypes,stabMultiplier,prepareMoveForm,shieldForm,afterMoveForm,applyMaxEffect,applyZStatus,copyBattleForm,stage,baseKey} from './transformations.js?v=0.92.0';
-import {CONTACT_MOVES,POWDER_MOVES} from './move-flags.js?v=0.92.0';
-import {abilityOf,itemOf,statusAllowed,statMultiplier,changeStage,moveAllowed,fieldWeather,preDamage,damageModifier,afterDamage,WEATHER_MOVES,setWeather} from './mechanics.js?v=0.92.0';
+import {executeMove as legacyMove,effectiveStat as legacyStat,applyStatus as legacyStatus,supportedMove as legacySupported} from './legacy-battle-rules.js?v=0.93.0';
+import {TRANSFORMATION_DATA} from './transformation-data.js?v=0.93.0';
+import {battleMove,battleTypes,stabMultiplier,prepareMoveForm,shieldForm,afterMoveForm,applyMaxEffect,applyZStatus,copyBattleForm,stage,baseKey} from './transformations.js?v=0.93.0';
+import {CONTACT_MOVES,POWDER_MOVES} from './move-flags.js?v=0.93.0';
+import {abilityOf,itemOf,statusAllowed,statMultiplier,changeStage,moveAllowed,fieldWeather,preDamage,damageModifier,afterDamage,WEATHER_MOVES,setWeather} from './mechanics.js?v=0.93.0';
 export const STATUS_NAMES={paralysis:['อัมพาต','Paralysis'],sleep:['หลับ','Sleep'],freeze:['แช่แข็ง','Freeze'],burn:['ไหม้','Burn'],poison:['พิษ','Poison']};
 const ailments={1:'paralysis',2:'sleep',3:'freeze',4:'burn',5:'poison'};
 const special=new Set([144,150,182,197,203,588,606,...Object.keys(WEATHER_MOVES).map(Number)]);
@@ -52,7 +52,7 @@ export function executeMove(dex,attacker,defender,slot,rng,battle={}){if(battle.
   const finalEffect=da==='tera-shell'&&defender.hp===defender.stats[0]&&effect>0?.5:effect,terrainFactor=terrainDamage(attacker,defender,move,dex,battle),aura=['fairy','dark'].includes(move.type)&&[attacker,defender].some(m=>abilityOf(m)===(move.type==='fairy'?'fairy-aura':move.type==='dark'?'dark-aura':''))?([attacker,defender].some(m=>abilityOf(m)==='aura-break')?.75:4/3):1;
   let hits=1,total=0;if(!move.max&&!move.z){if(meta.maxHits>1){const roll=rng();hits=aa==='skill-link'?meta.maxHits:meta.minHits===meta.maxHits?meta.maxHits:roll<.35?2:roll<.7?3:roll<.85?4:5;}else if(aa==='parental-bond'&&move.target!==7)hits=2;}
   for(let hit=0;hit<hits&&defender.hp>0&&attacker.hp>0;hit++){const shield=finalEffect>0?shieldForm(defender,move,dex,battle,ignore):'';if(shield){result.ability=shield;result.hits=(result.hits||0)+1;continue;}
-  let amount=finalEffect===0?0:Math.max(1,Math.floor(((2*attacker.level/5+2)*move.power*effectiveStat(attacker,special?3:1,battle,dex,defender)/effectiveStat(defender,special?4:2,battle,dex,attacker)/50+2)*stab*finalEffect*terrainFactor*aura*(defender.protected&&(move.z||move.max)&&!bypass?.25:1)*((defender.auroraVeil||battle.screens?.[battle.activeUid===defender.uid?'player':'opponent'])&&aa!=='infiltrator'?.5:1)*(aa==='parental-bond'&&hit===1&&!meta.maxHits?.25:1)*(crit?aa==='sniper'?2.25:1.5:1)*(.85+rng()*.15)*(attacker.status==='burn'&&!special&&aa!=='guts'?.5:1)*damageModifier(attacker,defender,move,effect,weather,ignore)*(sheer?1.3:1)));
+  let amount=finalEffect===0?0:Math.max(1,Math.floor(((2*attacker.level/5+2)*move.power*effectiveStat(attacker,special?3:1,battle,dex,defender)/effectiveStat(defender,special?4:2,battle,dex,attacker)/50+2)*stab*finalEffect*terrainFactor*aura*(defender.protected&&(move.z||move.max)&&!bypass?.25:1)*((defender.auroraVeil||battle.screens?.[battle.activeUid===defender.uid||battle.double?.allyUid===defender.uid?'player':'opponent'])&&aa!=='infiltrator'?.5:1)*(aa==='parental-bond'&&hit===1&&!meta.maxHits?.25:1)*(crit?aa==='sniper'?2.25:1.5:1)*(.85+rng()*.15)*(attacker.status==='burn'&&!special&&aa!=='guts'?.5:1)*damageModifier(attacker,defender,move,effect,weather,ignore)*(sheer?1.3:1)));
   if(amount>=defender.hp&&(defender.endure||defender.hp===defender.stats[0]&&(da==='sturdy'||itemOf(defender)==='focus-sash'))){amount=Math.max(0,defender.hp-1);if(itemOf(defender)==='focus-sash'&&!defender.endure&&da!=='sturdy'){defender.heldItem='';result.sash=true;}}
   amount=Math.min(amount,defender.hp);defender.hp-=amount;total+=amount;Object.assign(result,{damage:total,effect:finalEffect,crit,hits:hit+1});
   if(move.type==='fire'&&defender.status==='freeze')defender.status='';

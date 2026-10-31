@@ -24,7 +24,7 @@ try{for(const mobile of [true,false]){
  const empty=await importCard('Starter style '+device+' '+Date.now(),true);await p.waitForFunction(()=>globalThis.RoleForgePokemon?.world());await style('sprite');await open('adventure');assert.equal(await app().locator('.pk-starter img.pk-pokemon-sprite').count(),3);await loaded();await shot('starter-sprites');
  await importCard('Every screen style '+device+' '+Date.now());await p.waitForFunction(()=>globalThis.RoleForgePokemon?.world()?.started);await open('team');await click('deposit','[data-uid="initial-2"]');
  await p.evaluate(async()=>{const c=SillyTavern.getContext(),evidence='Professor Oak offered you a quest to find Articuno at Seafoam Islands.';c.chat.push({is_user:false,is_system:false,mes:evidence+'<!--roleforge_pokemon:'+JSON.stringify({version:3,events:[{type:'quest',speciesId:144,place:'Seafoam Islands',region:'Kanto',wins:2,receipt:'style-quest',evidence}]})+'-->',extra:{}});await c.eventSource.emit(c.eventTypes.MESSAGE_RECEIVED,c.chat.length-1);});assert.equal(await p.evaluate(()=>RoleForgePokemon.world().quests.length),1);
- const matrix=[];for(const theme of ['original','classic-dark']){
+ const matrix=[];for(const theme of ['kinetic','original','classic-dark']){
   await open('settings');await click('theme-set','[data-theme="'+theme+'"]');
   for(const mode of ['artwork','sprite']){
    await style(mode);for(const page of ['adventure','team','storage','dex','bag','settings','journal','services','center','training','trainers','quests','sandbox','bridge','equipment','coverage']){await open(page);const count=await check(mode,['adventure','team','storage','dex','center','training','quests'].includes(page));matrix.push({theme,mode,page,portraits:count});}

@@ -66,3 +66,4 @@
  .trpg-chat:is([data-rf-chat-theme="pokemon"],[data-rf-chat-theme="pokemon-dark"]) .trpg-narrative:not([data-pokemon-chat]){padding-left:24px;font-size:15px}
  .trpg-chat:is([data-rf-chat-theme="pokemon"],[data-rf-chat-theme="pokemon-dark"]) .trpg-narrative:not([data-pokemon-chat]):before{left:3px;width:10px;height:10px}
 }
+.trpg-chat:is([data-rf-chat-theme="pokemon"],[data-rf-chat-theme="pokemon-dark"]) [data-pokemon-chat=header] .pkc-name{font-family:var(--pl-display)}

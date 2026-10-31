@@ -1,6 +1,6 @@
-import {TRANSFORMATION_SYSTEMS,TERA_TYPES,megaForms} from './transformations.js?v=0.92.0';
-import {normalizeWeather} from './mechanics.js?v=0.92.0';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.92.0';
+import {TRANSFORMATION_SYSTEMS,TERA_TYPES,megaForms} from './transformations.js?v=0.93.0';
+import {normalizeWeather} from './mechanics.js?v=0.93.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.93.0';
 const regions=['Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar','Paldea'];
 const known=(proof,canonical,e)=>proof.toLocaleLowerCase().includes(canonical.toLocaleLowerCase())||typeof e.displayName==='string'&&e.displayName.length>=2&&e.displayName.length<=100&&/[\u0e00-\u0e7f]/u.test(e.displayName)&&proof.includes(e.displayName);
 const negative=/ไม่พบ|ไม่ได้รับ|สมมติ|\b(?:not|would|could|if|might|will)\b|กำลังจะ|จะได้รับ/iu;
@@ -53,7 +53,7 @@ export function parsePokemonStory(source,dex){
    // invitation (including one mislabeled by the model) remains an offer.
    const started=open&&/\b(?:sends?|sent|throws?|releases?) out\b|\baccepts? (?:your|the) (?:challenge|battle)\b|\bchallenge accepted\b|\blet'?s (?:battle|go)\b|\bbattle is on\b|ส่ง.{0,40}ออกมา|ปล่อย.{0,40}ออกมา|มา(?:ประลอง|สู้)กัน/iu.test(proof);
    const immediate=e.mode==='immediate'&&!/\bwill\b|จะเริ่ม|จะบังคับ|จะรับคำท้า/iu.test(proof)&&(started||/\b(?:battle (?:begins|starts)|forces? you (?:into|to) (?:a )?battle|attacks? you|you accept|you accepted)\b|เริ่ม(?:การ)?(?:ต่อสู้|ประลอง)|(?:การต่อสู้|การประลอง)เริ่ม|บังคับ(?:ให้)?คุณ(?:ต้อง)?(?:ต่อสู้|ประลอง)|คุณ(?:ตอบ)?รับคำท้า/iu.test(proof));
-   events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved,equipment,...immediate?{mode:'immediate'}:{}});continue;
+   const partner=typeof e.partner==='string'?e.partner.trim().slice(0,60):'';events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved,equipment,...immediate?{mode:'immediate'}:{},...partner&&partner.toLocaleLowerCase()!==name.toLocaleLowerCase()&&proof.toLowerCase().includes(partner.toLowerCase())?{partner}:{}});continue;
   }
   const p=dex.get(e.key||e.speciesId);if(!p||!known(proof,p.name,e)){reject('unproven-species');continue;}
   if(e.type==='quest'&&modern){const place=String(e.place||'').trim();if(!(p.legendary||p.mythical)||place.length<2||place.length>160||!proof.includes(place)||!/quest|mission|task|ภารกิจ|มอบหมาย/iu.test(proof)){reject('unproven-quest');continue;}events.push({...common,type:'quest-offer',speciesId:p.speciesId,place,region:regions.includes(e.region)?e.region:undefined,wins:Math.max(0,Math.min(20,Number(e.wins)||0))});continue;}

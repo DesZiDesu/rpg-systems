@@ -1,6 +1,6 @@
 // Read-only speaker projections. These never enter the NPC directory or game save.
-import {battleSpriteCandidates} from './battle-sprites.js?v=0.92.0';
-import {styleCandidates} from './sprite-styles.js?v=0.92.0';
+import {battleSpriteCandidates} from './battle-sprites.js?v=0.93.0';
+import {styleCandidates} from './sprite-styles.js?v=0.93.0';
 const key=value=>String(value||'').trim().normalize('NFKC').toLowerCase();
 const text=value=>typeof value==='string'?value.trim():'';
 const number=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?value:null;
@@ -24,6 +24,8 @@ export function pokemonChatProfiles(game,dex,{playerName='',motion=true,npcs=[]}
  for(const uid of owned){const mon=game.pokemon?.[uid];if(mon)entries.push({mon,ownerKind:'player',owner:text(playerName)});}
  const trainer=game.battle?.trainer;
  if(trainer)for(const mon of trainer.team||[])if(mon?.uid&&!owned.has(mon.uid))entries.push({mon,ownerKind:'trainer',owner:text(trainer.name)});
+ const partner=game.battle?.double?.partner;
+ if(partner)for(const mon of partner.team||[])if(mon?.uid&&!owned.has(mon.uid))entries.push({mon,ownerKind:'trainer',owner:text(partner.name)});
  const foe=game.battle?.wild;
  if(foe?.uid&&!entries.some(v=>v.mon.uid===foe.uid))entries.push({mon:foe,ownerKind:trainer?'trainer':'wild',owner:text(trainer?.name)});
  // Earlier messages still name opponents from finished battles. Caught ones

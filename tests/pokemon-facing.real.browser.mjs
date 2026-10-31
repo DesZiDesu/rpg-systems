@@ -24,14 +24,14 @@ try{for(const mobile of [false,true]){
  async function select(uid){if((await p.evaluate(()=>RoleForgePokemon.world())).battle.activeUid!==uid){await click('battle-menu','[data-pane="party"]');await click('switch','[data-uid="'+uid+'"]');await skip();}await loaded();}
  async function inspect(label,expected){
   await loaded();const f=await app().evaluate(root=>{const rect=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,w:r.width,h:r.height};},arena=root.querySelector('.pk-arena');return{arena:rect(arena),back:root.querySelector('.pk-ally-art img')?.getAttribute('data-pk-facing'),front:root.querySelector('.pk-foe-art img')?.getAttribute('data-pk-facing'),src:root.querySelector('.pk-ally-art img')?.src,format:root.querySelector('.pk-ally-art img')?.dataset.pkSpriteFormat,flip:getComputedStyle(root.querySelector('.pk-ally-art')).transform,missing:root.querySelectorAll('.pk-ally-art .pk-battle-sprite-missing').length,hud:[...root.querySelectorAll('.pk-battle-status')].map(rect),actors:[...root.querySelectorAll('.pk-platform .pk-ally-art,.pk-platform .pk-foe-art')].map(rect)};});
-  assert(Math.abs(f.arena.w/f.arena.h-16/9)<.01);assert.equal(f.flip,'none');assert.equal(f.front,'front');
+  const vp=p.viewportSize();assert(Math.abs(f.arena.w/f.arena.h-(label.startsWith('kinetic')&&(vp.width<=700||vp.height>vp.width)?4/3:16/9))<.01);assert.equal(f.flip,'none');assert.equal(f.front,'front');
   if(expected==='missing')assert.equal(f.missing,1);else{assert.equal(f.back,'back');assert.equal(f.format,expected);assert(f.src.includes('/back/'));}
   for(const h of f.hud)for(const m of f.actors)assert(h.right<=m.x||m.right<=h.x||h.bottom<=m.y||m.bottom<=h.y,'HP avoids sprites');
   report.checks.push({device,label,format:f.format,correctFacing:true,noFlip:true,missing:f.missing});
   if(label.endsWith('flabebe-yellow'))assert((await app().locator('.pk-field-roster [data-pk-art-key="flabebe-yellow"]').getAttribute('src')).endsWith('/669-yellow.png'),'Missing catalogue art uses an exact static front thumbnail');
   await shot(label);await p.waitForTimeout(500);
  }
- for(const theme of ['original','classic-dark']){
+ for(const theme of ['kinetic','original','classic-dark']){
   await p.evaluate(()=>RoleForgePokemon.open('settings'));await click('theme-set','[data-theme="'+theme+'"]');await p.evaluate(()=>RoleForgePokemon.open('adventure'));
   for(const [uid,name,kind]of [['initial-0','pixel','pixel'],['initial-1','model','model'],['initial-2','static','static'],['initial-3','unown-b','pixel'],['initial-4','flabebe-yellow','model'],['initial-5','koraidon-gliding','model']]){await select(uid);await inspect(theme+'-'+name,kind);if(kind==='static')assert(await app().locator('.pk-ally-art img').evaluate(n=>n.getAnimations().length>0),'Static fallback has idle motion');}
  }

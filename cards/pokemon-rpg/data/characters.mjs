@@ -99,14 +99,20 @@ const originalsTh={
  'pk-oc-gazette':{occupation:'เทรนเนอร์ / นักสืบอิสระ',gender:'ชาย',appearance:'ชายหนุ่มอายุไม่ระบุ สวมหมวกสีเข้มติดเสี้ยวจันทร์ มีผมและดวงตาสีม่วง เสื้อคอสูงสีดำตัดขาว ถุงมือ และสายคาดสีขาว',personality:'ช่างสังเกต อดทน พูดน้อยและมีอารมณ์ขันแห้ง ๆ เมื่อสนิท เขารักษาขอบเขตของตัวเอง สืบก่อนตัดสิน และเคารพการตัดสินใจของโปเกมอน ไม่ได้เป็นศัตรูหรือพวกของผู้เล่นโดยอัตโนมัติ',background:'เทรนเนอร์และนักสืบอิสระที่ติดตามสัญญาณแปลกตามชายฝั่ง เขาผูกพันกับโปเกมอนในตำนานต้นฉบับที่ยังไม่มีชื่อ เห็นตัวสีดำม่วง หน้ากากสีเงิน ดวงตาชมพูม่วง และอัญมณีแดงตรงอก ยังไม่ได้กำหนดชื่อสายพันธุ์ ธาตุ ความสามารถ สเตตัส ท่า ประวัติ หรือรูปร่างส่วนที่มองไม่เห็น',goals:'เปรียบเทียบรายงานจากชายฝั่งและดูแลคู่หู ผู้เล่นจะเป็นเพื่อน ตั้งคำถาม ต่อต้าน หรือไม่ยุ่งก็ได้',speechStyle:'พูดรอบคอบ ตรงประเด็น และแทรกอารมณ์ขันแห้ง ๆ โดยไม่พูดแทนผู้เล่น'},
  'pk-oc-alfmorii':{occupation:'นักวิจัยภาคสนาม / เทรนเนอร์อิสระ',gender:'หญิง',appearance:'หญิงผมสีอ่อนยาว ดวงตาอำพันอมส้ม สวมชุดสีเข้มและเครื่องประดับอัญมณีสีเขียว อายุไม่ระบุ',personality:'อ่อนโยนและใจเย็น แต่ถามตรงเมื่อข้ออ้างยังไม่มีหลักฐาน รับฟัง รักษาขอบเขตของตัวเอง และไม่จำเป็นต้องเห็นด้วยกับผู้เล่น',background:'เทรนเนอร์ นักวิจัยภาคสนามและผู้ดูแลคลังข้อมูลอิสระ สนใจแสงรุ่งอรุณ การอพยพ และสถานที่ที่ถูกลืม เธอผูกพันกับโปเกมอนในตำนานต้นฉบับที่ยังไม่มีชื่อ เห็นตัวสีขาวงาช้าง ดวงตาสีส้ม กิ่งเขาสีทอง ขนอ่อน และอัญมณีเขียวตรงอก ยังไม่ได้กำหนดชื่อสายพันธุ์ ธาตุ ความสามารถ สเตตัส ท่า ประวัติ หรือรูปร่างส่วนที่มองไม่เห็น',goals:'บันทึกสิ่งที่สังเกต ตั้งคำถามต่อตำนาน และดูแลคู่หู เธอไม่ได้ไว้ใจ ติดตาม หรือต่อต้านผู้เล่นโดยอัตโนมัติ',speechStyle:'อบอุ่น กระชับ ช่างสงสัย และแยกสิ่งที่สังเกตจากการตีความ'}
 };
-export function makeRoster(source,{icon,portraits,language='en'}){
+export function makeRoster(source,{icon,portraits,language='en',speciesNames=new Set()}){
  if(!customIconSource(icon))throw Error('Invalid embedded Poké Ball PNG');const used=new Set([...originals.map(o=>o.color.toLowerCase()),'#d18d9c','#98d5bd']),names=new Map(),npcs=[];
  for(const p of source.characters)names.set(p.name,(names.get(p.name)||0)+1);
- for(const p of [...source.characters].sort((a,b)=>a.id.localeCompare(b.id))){
+ // Indexed Pokémon are not NPCs: the addon has the real species data. The one
+ // fact they carried, who owns which Pokémon, moves onto the owner's record.
+ const isPokemon=p=>p.pokemon||speciesNames.has(/^.+?'s (.+?)(?: \(.*\))?$/u.exec(p.name)?.[1]),humans=source.characters.filter(p=>!isPokemon(p)),owned=new Map();
+ const ownersOf=owner=>{const exact=humans.filter(h=>h.name===owner||(h.aliases||[]).includes(owner)||h.name.startsWith(owner+' ')&&!h.name.includes("'s "));if(exact.length)return exact;const word=new RegExp('(^|[\\s&])'+owner.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'($|[\\s&,])','u');return humans.filter(h=>word.test(h.name)).slice(0,3);};
+ for(const p of source.characters){const m=isPokemon(p)&&/^(.+?)'s (.+)$/u.exec(p.name);if(!m)continue;for(const h of ownersOf(m[1])){const list=owned.get(h.id)||[];if(!list.includes(m[2]))list.push(m[2]);owned.set(h.id,list);}}
+ for(const p of [...humans].sort((a,b)=>a.id.localeCompare(b.id))){
   const descriptors=[...p.games.map(title),...p.series];const unique=[...new Set(descriptors)], role=roleFor(p,names,language);
   const facts=details[p.name]&&((names.get(p.name)===1)||p.id==='professor-oak')?(language==='th'?(detailsTh[p.name]||details[p.name]):details[p.name]):'';
   const context=unique.length?unique.join('; '):(language==='th'?'ยังไม่ระบุแหล่งโดยละเอียด':'Source details are not specified.');
-  const background=[facts,language==='th'?`ดัชนีแหล่ง: ${context} รายการนี้เป็นข้อมูลอ้างอิง ไม่ยืนยันว่าผู้เล่นได้พบแล้ว แต่ละฉบับอาจต่างกัน ให้ใช้ฉบับที่กำลังเล่น`:`Source index: ${context}. This is a reference record, not evidence of an encounter. Adaptations may differ; use only the active continuity.`].filter(Boolean).join(' ');
+  const known=owned.get(p.id)?.length?(language==='th'?'โปเกมอนที่รู้จักจากแหล่งอ้างอิง: ':'Pokémon known from the source index: ')+owned.get(p.id).join(', ')+'.':'';
+  const background=[facts,known,language==='th'?`ดัชนีแหล่ง: ${context} รายการนี้เป็นข้อมูลอ้างอิง ไม่ยืนยันว่าผู้เล่นได้พบแล้ว แต่ละฉบับอาจต่างกัน ให้ใช้ฉบับที่กำลังเล่น`:`Source index: ${context}. This is a reference record, not evidence of an encounter. Adaptations may differ; use only the active continuity.`].filter(Boolean).join(' ');
   // Detailed source dossiers for major recurring identities; every record keeps
   // its full series context for filtering without thousands of empty versions.
   const major=roles.has(p.name)||Object.hasOwn(details,p.name)||p.series.includes('Anime · Main cast');

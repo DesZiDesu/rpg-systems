@@ -31,7 +31,8 @@
 #chat .pkc-owner-label{letter-spacing:.12em}
 #chat .pkc-owner-name{overflow-wrap:anywhere}
 #chat .pkc-name-row.trpg-identity{display:flex!important;align-items:baseline;gap:8px;margin:0;padding:0;min-width:0}
-#chat [data-pokemon-chat=header] .pkc-name{display:block!important;margin:0!important;padding:0!important;font:700 30px/1.15 var(--pkc-display)!important;letter-spacing:.01em!important;color:var(--pkc-ink)!important;background:none!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important;text-transform:none!important;animation:none!important;overflow-wrap:anywhere}
+/* The name keeps the active RoleForge theme's name font, like every speaker. */
+#chat [data-pokemon-chat=header] .pkc-name{display:block!important;margin:0!important;padding:0!important;font-size:30px!important;line-height:1.15!important;font-weight:700!important;letter-spacing:.01em!important;color:var(--pkc-ink)!important;background:none!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important;text-transform:none!important;animation:none!important;overflow-wrap:anywhere}
 #chat .pkc-name:before,#chat .pkc-name:after{display:none!important}
 #chat .pkc-gender{font-size:18px;line-height:1;flex:none;color:#4f9fe0}
 #chat .pkc-gender[data-gender=female]{color:#ec6a9c}
