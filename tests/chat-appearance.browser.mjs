@@ -49,7 +49,7 @@ try{
   const id=await add(page),row=page.locator(`[mesid="${id}"] .mes_text`);await row.locator('.trpg-header').waitFor();
   const npcColor=await row.locator('.trpg-role').evaluate(n=>getComputedStyle(n).color);
   assert.equal(await control(page,'chatColorMode').count(),0);assert.equal(await control(page,'chatTheme').count(),1);
-  assert.deepEqual(await control(page,'chatTheme').locator('option').allTextContents(),['RoleForge Original','The Mage’s Folio','The Gilded Chapter','The Royal Codex','Aincrad Interface']);
+  assert.deepEqual(await control(page,'chatTheme').locator('option').allTextContents(),['RoleForge Original','The Mage’s Folio','The Gilded Chapter','The Royal Codex','Pokémon League · Day','Pokémon League · Night','Aincrad Interface']);
   for(let flags=0;flags<8;flags++){
    for(const [bit,key] of ['showChatHeader','showChatDialogue','showChatNarrative'].entries())await change(page,key,Boolean(flags&(1<<bit)));
    assert.equal(await row.locator('.trpg-header').count(),flags&1?1:0);

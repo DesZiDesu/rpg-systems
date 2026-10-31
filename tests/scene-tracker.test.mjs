@@ -38,7 +38,7 @@ test('scene theme selection changes presentation only, including partial and leg
     globalThis.document={createElement:tag=>new Node(tag)};
     const snapshot={sequence:52,day:1,location:'Camp',participants:['Mash'],temperature:12};
     const before=JSON.stringify(snapshot);
-    for(const theme of ['roleforge','folio','chapter','codex','aincrad']){
+    for(const theme of ['roleforge','folio','chapter','codex','pokemon','pokemon-dark','aincrad']){
         const card=renderSceneTracker(snapshot,'en',{theme,effects:false});
         assert.equal(card.attributes['data-rf-chat-theme'],theme);
         assert.equal(card.className,'trpg-scene-ledger');
@@ -83,4 +83,11 @@ test('legacy atlas names require migration evidence; actual story names remain u
     assert.equal(narrativeLocationLabel({place:'Gaia Manor',region:'Gaia Manor · Moon District · Moon District',continent:'Moon District'}),'Moon District');
     assert.equal(normalizeNarrativeLocation({place:'<script>alert(1)</script>'}).place,'<script>alert(1)</script>');
     assert(missingSceneFields({}).includes('region'));assert(missingSceneFields({}).includes('continent'));
+});
+
+test('scene participants show Pokémon names, never internal speaker ids',async()=>{
+ const {participantName}=await import('../src/scene-tracker.js');
+ const profiles=[{id:'pokemon:initial-0',name:'Nyaju',aliases:['pokemon:initial-0','pokemon:old-0']}];
+ assert.equal(participantName('pokemon:initial-0',profiles),'Nyaju');assert.equal(participantName('pokemon:old-0',profiles),'Nyaju');
+ assert.equal(participantName('pokemon:gone',[]),'Pokémon');assert.equal(participantName('Canari',profiles),'Canari');
 });

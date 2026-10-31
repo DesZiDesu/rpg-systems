@@ -31,7 +31,7 @@ try{for(const mobile of[false,true]){
   await setting('chatTheme',theme);for(let bits=0;bits<8;bits++){
    for(const[i,key]of['showChatHeader','showChatDialogue','showChatNarrative'].entries())await setting(key,Boolean(bits&(1<<i)));
    const root=p.locator('#chat .pkc-speaker').first();assert.equal(await root.locator('.pkc-header').count(),bits&1?1:0);assert.equal(await root.locator('.pkc-speaker-label').count(),bits&1?0:1);assert.equal(await root.locator('.pkc-dialogue-shell').count(),bits&2?1:0);assert.equal(await root.locator('.pkc-narrative-shell').count(),bits&4?1:0);
-   const dimensions=await root.evaluate(n=>({overflow:n.scrollWidth>n.clientWidth+1,clip:[...n.querySelectorAll('.pkc-plate,.pkc-dialogue-shell,.pkc-narrative-shell')].map(v=>({clip:getComputedStyle(v).clipPath,radius:getComputedStyle(v).borderRadius}))}));assert(!dimensions.overflow);for(const c of dimensions.clip){assert.equal(c.clip,'none');assert.equal(c.radius,'0px');}
+   const dimensions=await root.evaluate(n=>({overflow:n.scrollWidth>n.clientWidth+1,clip:[...n.querySelectorAll('.pkc-header,.pkc-dialogue-shell,.pkc-narrative-shell')].map(v=>({clip:getComputedStyle(v).clipPath,radius:getComputedStyle(v).borderRadius}))}));assert(!dimensions.overflow);for(const c of dimensions.clip){assert.equal(c.clip,'none');assert.equal(c.radius,'0px');}
    if(bits===7){const families=await p.evaluate(()=>{const human=document.querySelector('.trpg-header:not(.pkc-header) .trpg-identity>strong'),pk=document.querySelector('.pkc-name');return [getComputedStyle(human).fontFamily,getComputedStyle(pk).fontFamily];});assert.equal(families[0],families[1],theme+' retains native name font');}
    checks.push({theme,bits});
   }

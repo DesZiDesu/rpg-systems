@@ -2,6 +2,7 @@ import {appendPlayerNpcName} from './npc-visibility.js?v=0.92.0';
 import {usable,keyName} from './npc-core.js?v=0.92.0';
 const fact=value=>typeof value==='string'&&usable(value);
 export const illustratedChatTheme=theme=>['chapter','codex','aincrad'].includes(theme);
+export const pokemonChatTheme=theme=>theme==='pokemon'||theme==='pokemon-dark';
 
 const designPaths={book:'M3 4.5c3.5-1 6.5-.5 9 1.5 2.5-2 5.5-2.5 9-1.5v15c-3.5-1-6.5-.5-9 1.5-2.5-2-5.5-2.5-9-1.5zM12 6v15M6 8h3m-3 4h3m6-4h3m-3 4h3',pen:'M3 21 15 9M7 17C4 8 10 3 21 3c0 9-5 14-14 14ZM11 13h6M14 9h5',chevron:'m9 5 7 7-7 7'};
 export function chatDesignIcon(key,doc=globalThis.document){
@@ -41,7 +42,7 @@ export function dialogueFrame(name,appearance={},doc=globalThis.document) {
     const profile=typeof name==='object'&&name?name:null,displayName=profile?.name||name||'NPC';
     const paint=node=>profile?appendPlayerNpcName(node,profile,'dialogue'):(node.textContent=displayName,node);
     const body=doc.createElement('div');body.className=`trpg-dialogue${appearance.dialogue===false?' trpg-unframed':''}`;
-    if(appearance.theme==='folio'&&appearance.dialogue!==false){
+    if((appearance.theme==='folio'||pokemonChatTheme(appearance.theme))&&appearance.dialogue!==false){
         const label=doc.createElement('span');label.className='trpg-dialogue-label';paint(label);label.setAttribute('aria-hidden','true');body.append(label);
     }
     if(illustratedChatTheme(appearance.theme)&&appearance.dialogue!==false){

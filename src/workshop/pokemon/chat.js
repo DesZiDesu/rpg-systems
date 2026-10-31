@@ -41,7 +41,7 @@ export function pokemonChatProfiles(game,dex,{playerName='',motion=true,npcs=[]}
   const p=dex.get(mon.key);if(!p)return [];
   const name=text(mon.nickname)||p.name,id=pokemonChatId(mon.uid),qualified=owner?name+' ('+owner+')':'';
   return [{id,name,aliases:idOnly?[id]:[id,...formerIds.get(mon.uid)||[],name,p.name,p.key,qualified].filter(Boolean),identityColor:colors[p.types[0]]||'#c4d1dd',race:'Pokémon',
-   pokemon:{uid:mon.uid,key:p.key,speciesId:p.speciesId,name,speciesName:p.name,form:p.form||'',types:p.types,level:number(mon.level),hp:number(mon.hp),maxHp:number(mon.stats?.[0]),gender:['male','female','genderless'].includes(mon.traits?.gender)?mon.traits.gender:'unknown',ownerKind,owner,...departed?{departed:true}:{},...idOnly?{idOnly:true}:{},mode,motion:animate,images:pokemonChatImages(p,mon,dex,{mode,motion:animate,style})}}];
+   pokemon:{uid:mon.uid,key:p.key,speciesId:p.speciesId,name,speciesName:p.name,form:p.form||'',types:p.types,level:number(mon.level),hp:number(mon.hp),maxHp:number(mon.stats?.[0]),gender:['male','female','genderless'].includes(mon.traits?.gender)?mon.traits.gender:'unknown',ownerKind,owner,shiny:Boolean(mon.shiny),status:typeof mon.status==='string'?mon.status:'',...departed?{departed:true}:{},...idOnly?{idOnly:true}:{},mode,motion:animate,images:pokemonChatImages(p,mon,dex,{mode,motion:animate,style})}}];
  });
 }
 

@@ -1,3 +1,4 @@
+// Pokémon themes are pokemon (day) and pokemon-dark (night).
 // Retired theme keys remain importable
 // so older chats/cards keep their frame settings when upgrading.
 export const CHAT_THEMES = Object.freeze([
@@ -5,6 +6,8 @@ export const CHAT_THEMES = Object.freeze([
     {key:'folio',name:'The Mage’s Folio',genre:'Storybook',description:'Right-hand square portrait, illuminated name, rounded speech slip and pen signature. Uses each speaker’s character color.',descriptionTh:'ภาพสี่เหลี่ยมฝั่งขวา ป้ายชื่อแบบหนังสือ กรอบบทพูดโค้ง และลายเซ็นปากกา ใช้สีประจำตัวผู้พูด'},
     {key:'chapter',name:'The Gilded Chapter',genre:'Fantasy',description:'Engraved nameplate, left square portrait and chamfered walnut speech frame.',descriptionTh:'ป้ายชื่อแกะสลัก ภาพสี่เหลี่ยมฝั่งซ้าย และกรอบบทพูดสีน้ำตาลทองตัดมุม'},
     {key:'codex',name:'The Royal Codex',genre:'Fantasy',description:'Royal nameplate, right square portrait, double gold speech frame and right-hand pen rail.',descriptionTh:'ป้ายชื่อแบบคัมภีร์ ภาพสี่เหลี่ยมฝั่งขวา กรอบบทพูดทองสองชั้น และรางปากกาฝั่งขวา'},
+    {key:'pokemon',name:'Pokémon League · Day',genre:'Pokémon',description:'Trainer-card nameplate with a Poké Ball portrait ring, classic white game text box with a name tab and ▼ prompt, and light narration. Pokémon speakers stay frameless.',descriptionTh:'ป้ายชื่อแบบบัตรเทรนเนอร์ วงภาพแบบ Poké Ball กล่องข้อความสีขาวแบบในเกมพร้อมป้ายชื่อและลูกศร ▼ และคำบรรยายโปร่ง โปเกมอนยังไม่มีกรอบ'},
+    {key:'pokemon-dark',name:'Pokémon League · Night',genre:'Pokémon',description:'The same Trainer-card layout in dark mode: midnight game text box, gold name tab and ▼ prompt, tuned for dark SillyTavern themes.',descriptionTh:'เลย์เอาต์บัตรเทรนเนอร์แบบโหมดมืด กล่องข้อความสีกรมท่า ป้ายชื่อและลูกศร ▼ สีทอง เหมาะกับธีม SillyTavern สีเข้ม'},
     {key:'aincrad',name:'Aincrad Interface',genre:'Aincrad',description:'Silver floating speech panels, orange selections and optional NPC HP/Lv from existing records.',descriptionTh:'กรอบบทพูดสีเงิน แถบเลือกสีส้ม และป้าย HP/Lv ที่เลือกแสดงจากข้อมูล NPC จริงได้'},
 ]);
 export const CHAT_APPEARANCE_KEYS = Object.freeze({chatTheme:'theme',showChatHeader:'header',showChatDialogue:'dialogue',showChatNarrative:'narrative',chatEffects:'effects',chatHeaderBadgeMode:'badgeMode',chatHeaderBadgeAbility:'badgeAbility',chatNpcVitals:'npcVitals'});

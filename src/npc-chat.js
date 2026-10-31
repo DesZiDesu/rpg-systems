@@ -16,7 +16,7 @@ import {speechDisplayText} from './voice-core.js?v=0.92.0';
 import {parseUserMessage,renderUserBlocks,thoughtDots} from './user-chat.js?v=0.92.0';
 import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.92.0';
 import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.92.0';
-import {headerBadge,dialogueFrame,illustratedChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.92.0';
+import {headerBadge,dialogueFrame,illustratedChatTheme,pokemonChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.92.0';
 import {isPokemonSpeaker} from './workshop/pokemon/chat.js?v=0.92.0';
 import {pokemonSpeakerHeader,pokemonSpeakerLabel,pokemonStoryBody} from './workshop/pokemon/chat-ui.js?v=0.92.0';
 import {hostReplyGenerating} from './host-generation-state.js?v=0.92.0';
@@ -91,8 +91,8 @@ export function speakerHeader(profile, open, appearance='roleforge') {
     role.append(document.createTextNode([p.title,...(badge&&view.badgeMode==='occupation'&&usable(p.title)?[]:[p.occupation])].filter(usable).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || 'ROLEFORGE'));
     details.append(role,appendPlayerNpcName(element('strong'),p,typeof appearance==='object'&&appearance.eyeSlot==='npc'?'npc':'header'));
     const meta=element('span','trpg-meta');for(const value of [p.race,p.relationship,p.faction].filter(usable))meta.append(element('span','',value));details.append(meta);
-    if(view.theme==='folio'){
-        const monogram=element('span','trpg-folio-monogram',Array.from(p.name)[0]||'');monogram.setAttribute('aria-hidden','true');header.append(monogram);
+    if(view.theme==='folio'||pokemonChatTheme(view.theme)){
+        if(view.theme==='folio'){const monogram=element('span','trpg-folio-monogram',Array.from(p.name)[0]||'');monogram.setAttribute('aria-hidden','true');header.append(monogram);}
         if(badge){
             const strip=element('span','trpg-header-badge');strip.append(element('span','',badge.label));if(badge.level)strip.append(element('strong','',badge.level));
             details.insertBefore(strip,meta);

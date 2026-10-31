@@ -4,7 +4,7 @@ import {CHAT_THEMES,chatAppearance,normalizeChatAppearance,validateChatAppearanc
 import {exportWorldPreset,importWorldPreset,readChatPreset,CHAT_PRESET_KEY} from '../src/world-presets.js';
 import {readCharacterPack,writeCharacterPack,CHARACTER_PACK_FIELD} from '../src/character-archive.js';
 test('released designs have independent frames and no color-mode setting',()=>{
- assert.deepEqual(CHAT_THEMES.map(t=>t.key),['roleforge','folio','chapter','codex','aincrad']);
+ assert.deepEqual(CHAT_THEMES.map(t=>t.key),['roleforge','folio','chapter','codex','pokemon','pokemon-dark','aincrad']);
  assert.deepEqual(chatAppearance({}),{theme:'roleforge',header:true,dialogue:true,narrative:true,effects:true,npcVitals:true,badgeMode:'occupation',badgeAbility:''});
  assert.equal(chatAppearance({chatEffects:false}).effects,false);
  assert.deepEqual(chatAppearance({chatColorMode:'light'}),chatAppearance({}));
@@ -65,4 +65,9 @@ test('approved designs, NPC HUD choices and independent frames survive chat/libr
  }
  assert.throws(()=>validateChatAppearance({theme:'atelier'}),/Unknown chat theme/);
  for(const npcVitals of [null,0,'false',{},[]])assert.throws(()=>validateChatAppearance({theme:'aincrad',npcVitals}),/npcVitals/);
+});
+
+test('Pokémon League Day and Night are separate presets that survive import',()=>{
+ for(const theme of ['pokemon','pokemon-dark']){assert.equal(normalizeChatAppearance({theme}).theme,theme);assert.equal(validateChatAppearance({theme,header:true}).theme,theme);}
+ const names=CHAT_THEMES.filter(t=>t.genre==='Pokémon').map(t=>t.name);assert.deepEqual(names,['Pokémon League · Day','Pokémon League · Night']);
 });
