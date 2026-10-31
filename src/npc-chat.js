@@ -55,7 +55,15 @@ export function appendStoryText(node,value){
     return node;
 }
 // Pokémon always speak through the Pokémon header, ahead of any NPC record.
-const resolveSpeaker=(records,name)=>(typeof name==='string'&&globalThis.RoleForgePokemon?.speakerFor?.(name))||resolveNpcSpeaker(records,name);
+// Cards can index one person twice (game and anime records with the same
+// name). Strict resolution refuses to guess; the chat header only needs a face,
+// so prefer the met record, then one with a portrait, then the first.
+export function sharedNameSpeaker(records,name){
+ const wanted=typeof name==='string'&&keyName(name);if(!wanted)return null;
+ const same=records.filter(p=>[p.name,...(p.aliases||[])].some(n=>n&&keyName(n)===wanted));
+ return same.find(p=>p.met&&!p._archiveSummary)||same.find(p=>p.met)||same.find(p=>p.hasPortrait&&p.portraitSource!=='none')||same[0]||null;
+}
+const resolveSpeaker=(records,name)=>(typeof name==='string'&&globalThis.RoleForgePokemon?.speakerFor?.(name))||resolveNpcSpeaker(records,name)||sharedNameSpeaker(records,name);
 export function narrative(text,enabled=true,appearance={}) {
     const node = element('div',`trpg-narrative${enabled?'':' trpg-unframed'}`);
     if(illustratedChatTheme(appearance.theme)){
