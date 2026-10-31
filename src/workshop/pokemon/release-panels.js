@@ -1,5 +1,5 @@
-import {transformationItems} from './transformations.js?v=0.94.0';
-import {ABILITIES,HELD_ITEMS,WEATHER,abilityOf} from './mechanics.js?v=0.94.0';
+import {transformationItems} from './transformations.js?v=0.94.1';
+import {ABILITIES,HELD_ITEMS,WEATHER,abilityOf} from './mechanics.js?v=0.94.1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const title=v=>String(v||'').replaceAll('-',' ').replace(/\b\w/gu,c=>c.toUpperCase());
 export function releasePanels({get,apply,render}){

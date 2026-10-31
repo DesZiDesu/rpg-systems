@@ -246,7 +246,6 @@ def sea(seed=31):
     clouds(svg, rng, 6)
     svg.add(f'<path d="{ridge_path(ridge(rng, HORIZON - 50, 30, 18), HORIZON + 2)}" fill="#6c97b2" opacity=".7"/>')
     svg.add(f'<rect y="{HORIZON}" width="{W}" height="{H - HORIZON}" fill="{svg.grad("water", [(0, "#4fb6e6"), (0.5, "#2a8ccc"), (1, "#16609f")])}"/>')
-    svg.add(f'<polygon points="{pts([(1080, HORIZON), (1220, HORIZON), (1500, H), (800, H)])}" fill="{svg.grad("glint", [(0, "#fff", 0.55), (1, "#fff", 0)])}"/>')
     waves = []
     for _ in range(260):
         y = HORIZON + 6 + (H - HORIZON) * rng.random() ** 1.5
@@ -285,9 +284,6 @@ def lake(seed=41):
 def underwater(seed=51):
     rng, svg = random.Random(seed), Svg()
     svg.add(f'<rect width="{W}" height="{H}" fill="{svg.grad("deep", [(0, "#5fd0ee"), (0.45, "#1f8fc4"), (1, "#0b3d72")])}"/>')
-    rays = svg.blur('rays', 10)
-    beams = [f'<polygon points="{pts([(x, -20), (x + rng.uniform(40, 90), -20), (x + rng.uniform(160, 300), H), (x + rng.uniform(40, 120), H)])}" fill="#ffffff" opacity="{f(rng.uniform(.06, .14))}"/>' for x in range(-100, W, 170)]
-    svg.group(beams, filter=rays)
     svg.add(f'<path d="{ridge_path(ridge(rng, HORIZON + 40, 60, 20), H)}" fill="#1a5d86" opacity=".7" filter="{svg.blur("far", 3)}"/>')
     svg.add(f'<path d="{ridge_path(ridge(rng, HORIZON + 140, 30, 18, 0.5), H)}" fill="{svg.grad("seabed", [(0, "#c9b989"), (1, "#8f7f57")])}"/>')
     kelp = []
@@ -375,10 +371,8 @@ def building(seed=81):
     rng, svg = random.Random(seed), Svg()
     svg.add(f'<rect width="{W}" height="{HORIZON + 20}" fill="{svg.grad("wall", [(0, "#efe4d0"), (1, "#e2d2b6")])}"/>')
     svg.add(f'<rect y="{HORIZON - 90}" width="{W}" height="110" fill="#c9a77d"/><rect y="{HORIZON - 96}" width="{W}" height="8" fill="#a8845a"/>')
-    beams = []
     for i, x in enumerate([220, 640, 1060]):
         svg.add(f'<rect x="{x}" y="60" width="300" height="190" rx="6" fill="#bfe4fb" stroke="#8a6a46" stroke-width="12"/><line x1="{x + 150}" y1="60" x2="{x + 150}" y2="250" stroke="#8a6a46" stroke-width="8"/>')
-        beams.append(f'<polygon points="{pts([(x, 250), (x + 300, 250), (x + 420, H), (x - 140, H)])}" fill="#fff8e0" opacity=".16"/>')
     planks = []
     for i in range(-14, 15):
         x0 = 800 + i * 34
@@ -386,7 +380,6 @@ def building(seed=81):
     ground_top = HORIZON + 20
     svg.add(f'<rect y="{ground_top}" width="{W}" height="{H - ground_top}" fill="{svg.grad("floor", [(0, "#b27c4c"), (1, "#7d5232")])}"/>')
     svg.group(planks)
-    svg.group(beams, filter=svg.blur('beam', 8))
     svg.add(f'<ellipse cx="800" cy="{H - 160}" rx="620" ry="150" fill="#8e3b3b" opacity=".25"/>')
     for x in (60, 1500):
         svg.add(f'<rect x="{x}" y="{HORIZON + 30}" width="60" height="70" rx="8" fill="#a65b3a"/>')
@@ -437,7 +430,7 @@ def arena(key, seed=91):
             svg.add(f'<rect x="{x - 8}" y="150" width="16" height="90" fill="#5a3a22"/><circle cx="{x}" cy="140" r="60" fill="{svg.grad("torch" + str(x), [(0, "#ffb347", 0.7), (1, "#ffb347", 0)], radial=True)}"/><ellipse cx="{x}" cy="136" rx="12" ry="22" fill="#ffd27a"/>')
     lights = []
     for x in (200, 600, 1000, 1400):
-        lights.append(f'<circle cx="{x}" cy="40" r="20" fill="#fff"/><polygon points="{pts([(x - 14, 40), (x + 14, 40), (x + 220, HORIZON + 200), (x - 220, HORIZON + 200)])}" fill="#ffffff" opacity=".07"/>')
+        lights.append(f'<circle cx="{x}" cy="40" r="20" fill="#fff"/><circle cx="{x}" cy="40" r="46" fill="#fff" opacity=".18"/>')
     svg.group(lights, filter=svg.blur('lights', 6))
     # The court: a trapezoid in perspective with Pokémon field lines.
     left_top, right_top, left_bot, right_bot = 360, 1240, -300, 1900

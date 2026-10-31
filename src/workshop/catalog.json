@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.94.0",
+      "minimumRoleForge": "0.94.1",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -646,6 +646,17 @@
             "สนามต่อสู้วาดใหม่ทั้ง 20 แบบ มีแสงตามเวลา อนุภาคบรรยากาศ และสภาพอากาศ",
             "โปเกมอนตัวที่สองในศึกคู่มีฐานยืนของตัวเอง",
             "การ์ดข้อมูลฉากแบบ Pokémon League และไม่มีข้อความขึ้นตอนจับโปเกมอน"
+          ]
+        },
+        {
+          "version": "2.1.1",
+          "path": "packs/pokemon-2.1.1.json",
+          "sha256": "0a807a0fe14ce94142c86d7286694237a6426f475951bbeea55841cd42324799",
+          "bytes": 972,
+          "changes": [
+            "ศึกคู่: โปเกมอนตัวที่สองยืนกลางฐานบนพื้น และบนมือถือแถบ HP ไม่บังโปเกมอน",
+            "เอาลำแสงที่ส่องลงในฉากออก",
+            "มือถือ: ภาพไม่ล้นกรอบใน Pokédex และกล่อง แถวสายพันธุ์/ฟอร์มไม่ทับกัน หน้ารายละเอียดมีระยะขอบ"
           ]
         }
       ]

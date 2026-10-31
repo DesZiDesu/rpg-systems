@@ -439,3 +439,22 @@
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-completion-bar i{background:var(--k-red)}
 #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-double-step strong{font-family:var(--k-display)}
 @media(max-width:700px){#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-foe-status-b{top:28%;width:40%}#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-ally-status-b{width:40%;bottom:30%;right:2%}}
+/* Every small portrait fits inside its own box, whatever the sprite style. */
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-art{position:relative;overflow:hidden}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-art img{position:absolute;inset:11%;width:78%!important;height:78%!important;max-width:none!important;object-fit:contain!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-slot,.pk-summary-art,.pk-storage-bar-art,.pk-preset-mons>span,.pk-item-icon,.pk-mon-art){overflow:hidden}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] :is(.pk-slot,.pk-summary-art,.pk-storage-bar-art,.pk-preset-mons>span) img{width:100%!important;height:100%!important;max-width:100%!important;object-fit:contain!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-mon-art img{max-width:84px!important;max-height:84px!important;width:auto!important;height:auto!important;object-fit:contain}
+/* Species / Include forms / count: two equal buttons and a count that never overlaps. */
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-mode{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center;width:100%}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-mode>span{padding:0 12px;white-space:nowrap;font:600 12px var(--k-display);color:var(--k-muted)}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-mode button{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Detail sections get the same inner padding as every other card. */
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-detail-lower>*{padding:16px!important}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-detail-lower h2{margin-top:0}
+#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-stat-bars .pk-track{margin-right:0}
+@media(max-width:700px){
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-mon-art img{max-width:64px!important;max-height:64px!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-detail-lower>*{padding:14px!important}
+ #roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic] .pk-dex-mode>span{padding:0 8px;font-size:11px}
+}

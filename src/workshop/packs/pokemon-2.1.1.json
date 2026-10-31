@@ -1,0 +1,31 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.94.1",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.1.1",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "double-layout",
+      "title": "Double battle layout",
+      "text": "The second Pokémon on each side stands centred on its own floor base on the ground. On phones the four HP plates line the top and bottom edges, each beside its own Pokémon."
+    },
+    {
+      "id": "light",
+      "title": "Calmer painted light",
+      "text": "Downward light beams are removed from the painted fields."
+    },
+    {
+      "id": "mobile",
+      "title": "Phone fixes",
+      "text": "Sprites stay inside Pokédex cards and Storage slots in every sprite style, the Species / Include forms row no longer overlaps its count, and detail sections have proper padding."
+    }
+  ]
+}
