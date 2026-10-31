@@ -1,25 +1,25 @@
-import {playerNpc,npcVisibilityRevision,appendPlayerNpcName} from './npc-visibility.js?v=0.94.2';
-import {createChatScrollKeeper} from './chat-scroll.js?v=0.94.2';
-import {customIconSource} from './custom-icons.js?v=0.94.2';
-import {renderStoryEvents} from './story-events-ui.js?v=0.94.2';
-import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.94.2';
-import {renderResourceEvents} from './resource-events-ui.js?v=0.94.2';
-import {renderSceneTracker} from './scene-tracker.js?v=0.94.2';
-import {renderMissionBoard} from './mission-board-ui.js?v=0.94.2';
-import {renderGroupBoard} from './group-board-ui.js?v=0.94.2';
-import {uiText,uiLanguage} from './ui-language.js?v=0.94.2';
-import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.94.2';
-import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.94.2';
-import { croppedPortrait } from './npc-portraits.js?v=0.94.2';
-import { effectiveNpc } from './npc-alternates.js?v=0.94.2';
-import {speechDisplayText} from './voice-core.js?v=0.94.2';
-import {parseUserMessage,renderUserBlocks,thoughtDots} from './user-chat.js?v=0.94.2';
-import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.94.2';
-import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.94.2';
-import {headerBadge,dialogueFrame,illustratedChatTheme,pokemonChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.94.2';
-import {isPokemonSpeaker} from './workshop/pokemon/chat.js?v=0.94.2';
-import {pokemonSpeakerHeader,pokemonSpeakerLabel,pokemonStoryBody} from './workshop/pokemon/chat-ui.js?v=0.94.2';
-import {hostReplyGenerating} from './host-generation-state.js?v=0.94.2';
+import {playerNpc,npcVisibilityRevision,appendPlayerNpcName} from './npc-visibility.js?v=0.95.0';
+import {createChatScrollKeeper} from './chat-scroll.js?v=0.95.0';
+import {customIconSource} from './custom-icons.js?v=0.95.0';
+import {renderStoryEvents} from './story-events-ui.js?v=0.95.0';
+import {renderChatSystemStatus} from './main-chat-systems-ui.js?v=0.95.0';
+import {renderResourceEvents} from './resource-events-ui.js?v=0.95.0';
+import {renderSceneTracker} from './scene-tracker.js?v=0.95.0';
+import {renderMissionBoard} from './mission-board-ui.js?v=0.95.0';
+import {renderGroupBoard} from './group-board-ui.js?v=0.95.0';
+import {uiText,uiLanguage} from './ui-language.js?v=0.95.0';
+import { MEDALLION_ROLES, MEDALLION_FRAME } from './npc-medallions.js?v=0.95.0';
+import { identity, resolveNpcSpeaker, keyName, parseStory, ROLE_ICONS, usable } from './npc-core.js?v=0.95.0';
+import { croppedPortrait } from './npc-portraits.js?v=0.95.0';
+import { effectiveNpc } from './npc-alternates.js?v=0.95.0';
+import {speechDisplayText} from './voice-core.js?v=0.95.0';
+import {parseUserMessage,renderUserBlocks,thoughtDots} from './user-chat.js?v=0.95.0';
+import {chatPresentationMode,installChatFormattingHooks,mountSharedStory,scrubNativePrivateText,foreignFrontend,nativeDisplayPresent,releaseClonedPresentation,formattedReasoning,relinquishPresentation} from './chat-compat.js?v=0.95.0';
+import {chatAppearance,normalizeChatAppearance,applyChatTheme} from './chat-themes.js?v=0.95.0';
+import {headerBadge,dialogueFrame,illustratedChatTheme,pokemonChatTheme,npcHeaderVitals,chatDesignIcon} from './chat-folio.js?v=0.95.0';
+import {isPokemonSpeaker} from './workshop/pokemon/chat.js?v=0.95.0';
+import {pokemonSpeakerHeader,pokemonSpeakerLabel,pokemonStoryBody} from './workshop/pokemon/chat-ui.js?v=0.95.0';
+import {hostReplyGenerating} from './host-generation-state.js?v=0.95.0';
 
 export function element(tag, className = '', text) {
     const node = document.createElement(tag); node.className = className;
@@ -54,6 +54,8 @@ export function appendStoryText(node,value){
     else if(cursor<source.length)node.append(document.createTextNode(source.slice(cursor)));
     return node;
 }
+// Pokémon always speak through the Pokémon header, ahead of any NPC record.
+const resolveSpeaker=(records,name)=>(typeof name==='string'&&globalThis.RoleForgePokemon?.speakerFor?.(name))||resolveNpcSpeaker(records,name);
 export function narrative(text,enabled=true,appearance={}) {
     const node = element('div',`trpg-narrative${enabled?'':' trpg-unframed'}`);
     if(illustratedChatTheme(appearance.theme)){
@@ -135,7 +137,7 @@ export function renderStoryBlocks(root, blocks, lookup, fallbackName, open, imag
     root.classList.add('trpg-story-flow');
     let section = null;
     const startSpeaker = name => {
-        const profile = resolveNpcSpeaker([...new Set(lookup.values())], name);
+        const profile = resolveSpeaker([...new Set(lookup.values())], name);
         // Canonical profiles unify aliases without conflating distinct NPCs.
         const speaker = profile || keyName(name);
         if (speaker === previousSpeaker && section) return section;
@@ -181,7 +183,7 @@ export function priorDialogueSpeaker(messages, id, lookup, visible) {
     const last = blocks?.findLast(block => block.type === 'dialogue' || block.type === 'header' || block.type === 'thought'&&block.name);
     if (!last) return null;
     const name = last.name || prior.name || 'NPC';
-    return resolveNpcSpeaker([...new Set(lookup.values())], name) || keyName(name);
+    return resolveSpeaker([...new Set(lookup.values())], name) || keyName(name);
 }
 
 function diaryBook(note) {
@@ -507,10 +509,10 @@ export function createChatPresentation(api, open) {
             let sharedMount,disposeVoice;
             if(shared){
                 sharedMount=mountSharedStory({host,nodes:nativeNodes(host),blocks,fallbackName:message.name,previousSpeaker,voiceEnabled:Boolean(settings.enableVoiceAddon),language:settings.language,
-                    narrative:(text,name)=>pokemonStoryBody(narrative(text,view.narrative,view),resolveNpcSpeaker([...new Set(lookup.values())],name),'narrative'),thought:()=>npcThought(''),dialogueEnabled:view.dialogue,
-                    dialogue:name=>{const profile=resolveNpcSpeaker([...new Set(lookup.values())],name);return pokemonStoryBody(dialogueFrame(isPokemonSpeaker(profile)?profile:playerNpc(profile)||name,view),profile,'dialogue');},textFor:block=>appendStoryText(element('span'),block.text).textContent,
+                    narrative:(text,name)=>pokemonStoryBody(narrative(text,view.narrative,view),resolveSpeaker([...new Set(lookup.values())],name),'narrative'),thought:()=>npcThought(''),dialogueEnabled:view.dialogue,
+                    dialogue:name=>{const profile=resolveSpeaker([...new Set(lookup.values())],name);return pokemonStoryBody(dialogueFrame(isPokemonSpeaker(profile)?profile:playerNpc(profile)||name,view),profile,'dialogue');},textFor:block=>appendStoryText(element('span'),block.text).textContent,
                     header:(name,previous,colorOnly=false)=>{
-                        const profile=resolveNpcSpeaker([...new Set(lookup.values())],name),key=profile||keyName(name),p=profile||{name};
+                        const profile=resolveSpeaker([...new Set(lookup.values())],name),key=profile||keyName(name),p=profile||{name};
                         const color=identity(p).identityColor;
                         if(colorOnly||key===previous)return {key,color,node:null};
                         const header=view.header?speakerHeader(p,open,view):isPokemonSpeaker(p)?pokemonSpeakerLabel(p):appendPlayerNpcName(element('div','trpg-speaker-label'),playerNpc(p),'header');header.style.setProperty('--speaker',color);

@@ -1,6 +1,6 @@
-import {KEITAI_SHELL} from './shell.js?v=0.94.2';
-import {contactLabel,safeImage,clean} from '../model.js?v=0.94.2';
-import {smsParts,mailAddress} from '../handset.js?v=0.94.2';
+import {KEITAI_SHELL} from './shell.js?v=0.95.0';
+import {contactLabel,safeImage,clean} from '../model.js?v=0.95.0';
+import {smsParts,mailAddress} from '../handset.js?v=0.95.0';
 
 const esc=value=>String(value??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const artwork=name=>new URL('./assets/'+name+'.svg',import.meta.url).href;

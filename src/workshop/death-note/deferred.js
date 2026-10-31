@@ -1,5 +1,5 @@
-import {makeInscription} from './core.js?v=0.94.2';
-import {cleanPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.94.2';
+import {makeInscription} from './core.js?v=0.95.0';
+import {cleanPaper,paperInputs,markPaperSubmitted} from './paper.js?v=0.95.0';
 
 // Staging is independent of generation: the host can send one normal reply,
 // retry it after a network error, or Continue without creating a User turn.

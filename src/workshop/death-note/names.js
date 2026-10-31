@@ -1,5 +1,5 @@
-import {CANON_NAME_SPELLINGS} from './canon-spellings.js?v=0.94.2';
-import {CANON_DISPLAY_NAMES} from './name-labels.js?v=0.94.2';
+import {CANON_NAME_SPELLINGS} from './canon-spellings.js?v=0.95.0';
+import {CANON_DISPLAY_NAMES} from './name-labels.js?v=0.95.0';
 const key=s=>String(s||'').normalize('NFKC').replace(/\s+/gu,' ').trim().toLocaleLowerCase();
 const clean=s=>typeof s==='string'&&s.trim().length<=160?s.trim():'';
 function versionValue(value,npc){return value&&typeof value==='object'&&!Array.isArray(value)?Object.hasOwn(value.versions||{},npc.activeAlternateId)?value.versions[npc.activeAlternateId]:value.default:value;}

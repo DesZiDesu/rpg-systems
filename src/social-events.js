@@ -1,4 +1,4 @@
-import { parseStory } from './npc-core.js?v=0.94.2';
+import { parseStory } from './npc-core.js?v=0.95.0';
 // Pure guards shared by the inline turn tracker and its chat presentation.
 const rates = Object.freeze({ off: Infinity, rare: 12, normal: 5, often: 2 });
 export const diaryRates = Object.keys(rates);

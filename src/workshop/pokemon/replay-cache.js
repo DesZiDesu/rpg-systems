@@ -1,4 +1,4 @@
-import {initialGame,replayStep} from './core.js?v=0.94.2';
+import {initialGame,replayStep} from './core.js?v=0.95.0';
 // Cache references to immutable message strings, never copies of all chat text.
 // At most 16 checkpoints are retained. Editing, swiping or deleting invalidates
 // only the suffix; appending a turn resumes from the latest committed checkpoint.

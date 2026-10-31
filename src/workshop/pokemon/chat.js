@@ -1,6 +1,6 @@
 // Read-only speaker projections. These never enter the NPC directory or game save.
-import {battleSpriteCandidates} from './battle-sprites.js?v=0.94.2';
-import {styleCandidates} from './sprite-styles.js?v=0.94.2';
+import {battleSpriteCandidates} from './battle-sprites.js?v=0.95.0';
+import {styleCandidates} from './sprite-styles.js?v=0.95.0';
 const key=value=>String(value||'').trim().normalize('NFKC').toLowerCase();
 const text=value=>typeof value==='string'?value.trim():'';
 const number=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?value:null;
@@ -54,4 +54,29 @@ export function availablePokemonSpeakers(profiles,reserved=[]){
  for(const p of profiles)if(!p.pokemon?.idOnly)for(const value of new Set([p.name,...p.aliases].map(key)))counts.set(value,(counts.get(value)||0)+1);
  return profiles.map(p=>(p.pokemon?.idOnly?{...p,name:p.id,aliases:[p.id]}:{...p,name:used.has(key(p.name))||counts.get(key(p.name))>1?p.id:p.name,
   aliases:[...new Set(p.aliases)].filter(value=>value===p.id||!used.has(key(value))&&counts.get(key(value))===1)}));
+}
+// Every Pokémon named in the story speaks through the Pokémon header, never as
+// an NPC: an exact pokemon:<id>, or a species name with an optional owner
+// ("Canari's Pikachu", "Pikachu (Canari)"). A single matching Pokémon in this
+// chat answers; otherwise a species-only header stands in. Nicknames are left
+// to the normal lookup so a human with the same name keeps priority.
+const speciesNames=new WeakMap();
+function speciesByName(dex,name){
+ let map=speciesNames.get(dex);
+ if(!map){map=new Map();for(const p of dex.bySpecies.values())for(const v of [p.name,p.key])map.set(key(v),p);speciesNames.set(dex,map);}
+ return map.get(key(name))||null;
+}
+export function pokemonSpeakerFor(name,profiles,dex,{mode='artwork',motion=true,style=''}={}){
+ const raw=text(name);if(!raw||!dex)return null;
+ if(/^pokemon:\S+$/iu.test(raw))return profiles.find(p=>p.id===raw||p.aliases?.includes(raw))||null;
+ const possessive=/^(.+?)['’]s\s+(.+)$/u.exec(raw),bracket=/^(.+?)\s*\((.+)\)$/u.exec(raw);
+ const [speciesName,owner]=bracket?[bracket[1],bracket[2]]:possessive?[possessive[2],possessive[1]]:[raw,''];
+ const p=speciesByName(dex,speciesName);if(!p)return null;
+ const same=profiles.filter(v=>v.pokemon&&dex.get(v.pokemon.key)?.speciesId===p.speciesId&&(!owner||key(v.pokemon.owner)===key(owner)));
+ const pick=list=>list.length===1?list[0]:null;
+ const found=pick(same.filter(v=>!v.pokemon.departed&&v.pokemon.ownerKind!=='player'&&!v.pokemon.idOnly))||pick(same.filter(v=>v.pokemon.ownerKind==='player'))||pick(same.filter(v=>!v.pokemon.departed))||pick(same);
+ if(found)return found;
+ const uid='species-'+p.key;
+ return {id:pokemonChatId(uid),name:p.name,aliases:[pokemonChatId(uid)],identityColor:colors[p.types[0]]||'#c4d1dd',race:'Pokémon',
+  pokemon:{uid,key:p.key,speciesId:p.speciesId,name:p.name,speciesName:p.name,form:p.form||'',types:p.types,level:null,hp:null,maxHp:null,gender:'unknown',ownerKind:owner?'trainer':'wild',owner:text(owner),shiny:false,status:'',speciesOnly:true,mode,motion,images:pokemonChatImages(p,{key:p.key},dex,{mode,motion,style})}};
 }

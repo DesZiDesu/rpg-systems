@@ -1,6 +1,6 @@
-import {phoneConfig} from './smartphone/model.js?v=0.94.2';
-import {normalizeDeathNoteConfig} from './death-note/character-config.js?v=0.94.2';
-import {sha256} from '../vendor/js-sha256/index.js?v=0.94.2';
+import {phoneConfig} from './smartphone/model.js?v=0.95.0';
+import {normalizeDeathNoteConfig} from './death-note/character-config.js?v=0.95.0';
+import {sha256} from '../vendor/js-sha256/index.js?v=0.95.0';
 export const FORMAT='roleforge-workshop-addon';
 export const addonIds=['great-sage','field-notes','death-note','smartphone','pokemon'];
 export const localId=()=>globalThis.crypto?.randomUUID?.()||`sage-${Date.now()}-${Math.random().toString(36).slice(2)}`;

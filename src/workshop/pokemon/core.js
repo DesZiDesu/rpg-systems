@@ -1,15 +1,15 @@
-import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.94.2';
-import {parsePokemonStory} from './story.js?v=0.94.2';
-import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.94.2';
-import {applyStatus} from './battle-rules.js?v=0.94.2';
-import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.94.2';
-import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.94.2';
-import {BALLS,ballChance,useMedicine} from './items.js?v=0.94.2';
-import {expansionAction} from './game-actions.js?v=0.94.2';
-import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.94.2';
-import {resolveTerrain} from './terrains.js?v=0.94.2';
-import {validTerrain} from './terrains.js?v=0.94.2';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.94.2';
+import {formAction,transformationConfig,transformationHeldItem,transformationOptions,transformBattle,automaticForm,switchForm,clearTransformations,restoreBattleForm,finishTransformationTurn,battleMove,battleTypes,baseKey,syncEquipmentForm,copyBattleForm} from './transformations.js?v=0.95.0';
+import {parsePokemonStory} from './story.js?v=0.95.0';
+import {chooseAbility,abilityOf,itemOf,enterBattle,leaveBattle,moveAllowed,endTurn,normalizeWeather,fieldWeather,HELD_ITEMS} from './mechanics.js?v=0.95.0';
+import {applyStatus} from './battle-rules.js?v=0.95.0';
+import {traitsFor,specimenStats,refreshStats,awardEVs} from './specimens.js?v=0.95.0';
+import {supportedMove,executeMove,effectiveStat,residual} from './battle-rules.js?v=0.95.0';
+import {BALLS,ballChance,useMedicine} from './items.js?v=0.95.0';
+import {expansionAction} from './game-actions.js?v=0.95.0';
+import {trainerDefinition,gymAvailable,isCenter,regionalPool} from './adventure-rules.js?v=0.95.0';
+import {resolveTerrain} from './terrains.js?v=0.95.0';
+import {validTerrain} from './terrains.js?v=0.95.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.95.0';
 // Pokémon preview: immutable, replayable game state. No network or host globals.
 export const JOURNAL='roleforge_pokemon_v1',PROMPT='roleforge_pokemon_world',ACTION_PROMPT='roleforge_pokemon_action';
 export const newActionId=()=>globalThis.crypto?.randomUUID?.()||'pk-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
@@ -240,7 +240,7 @@ export function transition(current,event,dex,rules={}){
  }else if(e.type==='lead'){assert(!s.battle&&s.party.includes(e.uid)&&s.pokemon[e.uid].hp>0,'Choose a healthy party member outside battle');s.party=[e.uid,...s.party.filter(id=>id!==e.uid)];log(s,'lead',{name:species(dex,s.pokemon[e.uid]).name});
  }else if(e.type==='nickname'){assert(s.pokemon[e.uid],'Unknown party member');s.pokemon[e.uid].nickname=String(e.name||'').trim().slice(0,36);
  }else if(e.type==='narrated'){s.pendingNarration=false;
- }else if(e.type==='settings'){if(REGIONS.includes(e.region))s.region=e.region;if(typeof e.autoNarrate==='boolean')s.settings.autoNarrate=e.autoNarrate;if(e.terrain!==undefined){assert(validTerrain(e.terrain),'Unknown battle terrain');s.settings.terrain=e.terrain;}if(e.shinyRate!==undefined){assert(SHINY_RATES.includes(e.shinyRate),'Unknown shiny rate');s.settings.shinyRate=e.shinyRate;}
+ }else if(e.type==='settings'){if(REGIONS.includes(e.region))s.region=e.region;if(typeof e.autoNarrate==='boolean')s.settings.autoNarrate=e.autoNarrate;if(typeof e.playerEncounters==='boolean')s.settings.playerEncounters=e.playerEncounters;if(e.terrain!==undefined){assert(validTerrain(e.terrain),'Unknown battle terrain');s.settings.terrain=e.terrain;}if(e.shinyRate!==undefined){assert(SHINY_RATES.includes(e.shinyRate),'Unknown shiny rate');s.settings.shinyRate=e.shinyRate;}
  }else throw Error('Unsupported Pokémon action');if(s.battle&&['attack','catch','switch','potion','use-item'].includes(e.type)){const a=active(s),foe=s.battle.wild;for(const m of[a,foe]){if(e.engine>=3){for(const change of endTurn(m,species(dex,m),dex,{...s.battle,combatants:[a,foe]},applyStatus))log(s,'battle-effect',{name:species(dex,m).name,...change});}else{const amount=residual(m);if(amount)log(s,'residual',{name:species(dex,m).name,damage:amount,status:m.status});}m.protected=false;m.maxGuard=false;m.endure=false;}if(!foe.hp)finish(s,dex,true);else if(!a.hp){const next=healthy(s);if(next){leaveBattle(a);if(s.battle?.transformRules)switchForm(a,dex);if(!a.hp){restoreBattleForm(a,dex);delete a.tera;}s.battle.activeUid=next;automaticForm(s,dex,s.pokemon[next],'entry',log);enterBattle(s.pokemon[next],foe,s.battle,dex);}else finish(s,dex,false);}if(e.engine>=4&&s.battle)finishTransformationTurn(s,dex,log);if(s.battle?.weatherTurns>0&&--s.battle.weatherTurns===0){s.battle.weather='clear';log(s,'weather',{weather:'clear'});}}if(s.battle?.transformRules)for(const m of[s.pokemon[s.battle.activeUid],s.battle.wild])automaticForm(s,dex,m,'check',log);
  if(s.battle?.transformRules)for(let i=0;s.battle&&!active(s).hp&&i<6;i++){const uid=healthy(s);if(!uid){finish(s,dex,false);break;}s.battle.activeUid=uid;automaticForm(s,dex,active(s),'entry',log);enterBattle(active(s),s.battle.wild,s.battle,dex);}
  if(s.battle)s.outUid=s.battle.activeUid;if(!s.battle)for(const m of Object.values(s.pokemon)){clearTransformations(m,dex);m.stages=Array(8).fill(0);m.choiceMove=0;m.protected=false;m.endure=false;m.flashFire=false;delete m.battleAbility;}if(!['settings','nickname','narrated'].includes(e.type))s.pendingNarration=true;return s;
@@ -249,6 +249,25 @@ export function journalEvent(event,m){const offset=String(m.mes||'').length;retu
 export function activeEvents(m){const swipe=m.swipe_id||0,length=String(m.mes||'').length;return Array.isArray(m.extra?.[JOURNAL])?m.extra[JOURNAL].filter(e=>e&&e.swipe===swipe&&e.offset<=length&&(!e.anchorHash||e.anchorHash===sha256(String(m.mes||'').slice(0,e.offset)))):[];}
 export function narratedEncounters(source,dex){return parsePokemonStory(source,dex).events;}
 
+// With "Player-chosen encounters" on, the player's own narration can bring a
+// wild Pokémon out now: "A wild Pikachu jumps out", "Gible appears in front of
+// me", "เจอ Pikachu ตรงหน้า". Spoken lines, wishes, plans and negations never
+// count. Level follows the lead partner like Explore; legendaries still need
+// their quest (the encounter rules refuse them otherwise).
+const APPEAR=/\b(?:appear(?:s|ed)?|jump(?:s|ed)? out|leap(?:s|t|ed)? out|pop(?:s|ped)? out|burst(?:s)? out|emerge(?:s|d)?|show(?:s|ed)? up|rush(?:es|ed)? out|dart(?:s|ed)? out|come(?:s)? out|came out|encounter(?:s|ed)?|run(?:s)? into|ran into|stumble(?:s|d)? (?:on|upon|into)|spot(?:s|ted)?|find(?:s)?|found)\b|ปรากฏ|โผล่|กระโดดออกมา|พุ่งออกมา|วิ่งออกมา|ออกมาจาก|เจอ|พบ/iu;
+const WISH=/\b(?:not|never|no|if|would|could|might|imagine|want(?:s|ed)?|wish(?:es)?|hope(?:s)?|look(?:s|ing)? for|search(?:es|ing)? for|try(?:ing)? to find|maybe|later|will)\b|ไม่|อยาก|ถ้า|หวัง|ตามหา|ค้นหา|มองหา|สมมติ|เดี๋ยว|จะไป/iu;
+function playerEncounter(s,text,index,dex){
+ if(!s.settings?.playerEncounters||s.battle||!s.started)return null;
+ const lead=s.pokemon[s.party.find(id=>s.pokemon[id].hp>0)];if(!lead)return null;
+ const visible=String(text||'').replace(/<[^>]*>/gu,' ').replace(/\|[^|]*\|/gu,' ').replace(/"[^"]*"|“[^”]*”|「[^」]*」/gu,' ');
+ for(const sentence of visible.split(/(?<=[.!?。…])\s+|\n+/u)){
+  if(!APPEAR.test(sentence)||WISH.test(sentence))continue;
+  const hits=[...new Set([...sentence.matchAll(/[A-Za-z][A-Za-z.'’-]*(?:\s(?:Jr\.|Mime|Rime|Koko|Lele|Bulu|Fini|Oh))?/gu)].map(m=>dex.get(m[0].toLowerCase().replace(/[.'’]/gu,'').replace(/\s+/gu,'-'))).filter(p=>p&&p.default!==false&&!p.battleOnly).map(p=>p.speciesId))];
+  if(hits.length!==1)continue;
+  return {id:'user-encounter-'+index,type:'encounter',engine:4,source:'user',speciesId:hits[0],level:Math.max(2,lead.level-2),context:{place:''}};
+ }
+ return null;
+}
 function playerSceneAction(s,text,index,dex){
  if(s.battle||!s.started)return null;
  const visible=String(text||'').replace(/<[^>]*>/gu,' ').replace(/\|[^|]*\|/gu,' ');
@@ -260,7 +279,7 @@ function playerSceneAction(s,text,index,dex){
  if(matches.length!==1)return null;
  return {id:'user-scene-'+index,type:recall?'recall':'send-out',uid:matches[0],source:'user'};
 }
-export function replayStep(s,m,index,dex,rules,seen,receipts){if(m.is_system)return s;if(m.is_user){const ask=battleAsk(m.mes),e=playerSceneAction(s,m.mes,index,dex);if(e)try{s=transition(s,e,dex,rules);}catch{}return ask||s.battleAsk?{...s,battleAsk:ask?{index,text:ask}:null}:s;}
+export function replayStep(s,m,index,dex,rules,seen,receipts){if(m.is_system)return s;if(m.is_user){const ask=battleAsk(m.mes),e=playerSceneAction(s,m.mes,index,dex);if(e)try{s=transition(s,e,dex,rules);}catch{}const met=playerEncounter(s,m.mes,index,dex);if(met)try{s=transition(s,met,dex,rules);}catch{}return ask||s.battleAsk?{...s,battleAsk:ask?{index,text:ask}:null}:s;}
  // A player's battle request is consent for the very next reply only. Older
  // replies keep their original meaning; recovery runs only on live replies.
  const ask=s.battleAsk?.text||'',live=Number(m.extra?.[LIVE])>=1;if(s.battleAsk)s={...s,battleAsk:null};
@@ -275,7 +294,7 @@ export function replay(chat,dex,rules={}){let s=initialGame(dex,rules);const see
 
 export function worldPrompt(s,dex){const display=m=>({id:m.uid,chatSpeaker:'pokemon:'+m.uid,species:species(dex,m).name,form:species(dex,m).form,key:m.key,types:battleTypes(m,dex),baseForm:baseKey(m),transformation:m.formState?.kind||m.tera&&'tera'||'',tera:m.tera||null,dynamax:m.dynamax||null,nickname:m.nickname,level:m.level,hp:m.hp,maxHp:m.stats[0],ability:abilityOf(m),heldItem:m.heldItem||'',status:m.status||'',...m.hp>0?{}:{fainted:true,condition:'fainted: inside its Poké Ball, cannot battle, act or speak'},gender:m.traits?.gender||'unknown',nature:m.traits?.nature||'Hardy',stats:m.stats,shiny:m.shiny,moves:m.moves.map(v=>{const move=battleMove(dex,m,dex.moves[v.id],s.battle||{});return{name:move.name,pp:v.pp,...m.dynamax||m.tera?{type:move.type,power:move.power}:{} };})});const fainted=s.party.filter(id=>!(s.pokemon[id].hp>0));return 'ROLEFORGE POKEMON ADDON\n'+JSON.stringify({region:s.region,partnerChosen:s.started,outsideCompanion:s.outUid&&s.pokemon[s.outUid]?display(s.pokemon[s.outUid]):null,party:s.party.map(id=>display(s.pokemon[id])),...fainted.length?{faintedParty:fainted.map(id=>'pokemon:'+id),canBattle:s.party.some(id=>s.pokemon[id].hp>0)}:{},storageCount:s.box.length,bag:Object.fromEntries(Object.entries(s.inventory).filter(([,n])=>n>0)),badges:s.badges,quests:s.quests,trainerChallenges:(s.trainerChallenges||[]).filter(v=>v.status!=='completed').slice(-3),...Object.keys(s.rosters||{}).length?{npcRosters:Object.values(s.rosters).slice(-8).map(r=>({name:r.name,team:r.team.map(m=>({chatSpeaker:'pokemon:'+m.uid,species:dex.get(m.key)?.name||m.key,level:m.level,...m.nickname?{nickname:m.nickname}:{}}))}))}:{},battle:s.battle?{round:s.battle.round,weather:fieldWeather(s.battle,[s.pokemon[s.battle.activeUid],s.battle.wild]),terrain:s.battle.terrain||'none',wild:display(s.battle.wild),trainer:s.battle.trainer?.name,...s.battle.double?{double:{partnerTrainer:s.battle.double.partner.name,partnerPokemon:s.battle.double.foe?display(s.battle.double.foe):null,secondPlayerPokemon:s.battle.double.allyUid?display(s.pokemon[s.battle.double.allyUid]):null}}:{},events:(s.battle.log||[]).slice(-12)}:null,lastBattle:s.lastBattle,transformationRules:transformationConfig(s.settings.transformations),battleTransformationRules:s.battle?.transformRules||null,transformationUsed:s.battle?.transformUsed||{},recentResults:s.logs.slice(-6)})+`
 Engine state and recentResults are authoritative: narrate these HP, moves, captures, evolution, forms and results in the current language. outsideCompanion is the Pokémon physically out with the player; null means none. Respect named player send-out/recall narration. Never invent player dialogue, outcomes, rewards or repeat resolved actions. Thoughts are not permission. Never enable Sandbox or cheats yourself.
-${fainted.length?'faintedParty Pokémon (hp 0) are back in their Poké Balls: absent from the scene, unable to battle, move, speak or cry until healed at a Pokémon Center or revived. Never narrate them acting or give them headers/dialogue. canBattle false: the player cannot battle until healed.\n':''}${s.lastBattle?'lastBattle is canon for the story: result, final HP/fainted states, opponents and events of the last finished battle. Keep narration consistent with it; never replay or contradict it.\n':''}For Pokémon cries/dialogue use <tr-header name="pokemon:UID"/> and <tr-dialogue name="pokemon:UID"> with the exact chatSpeaker ID above. Following narration belongs to that Pokémon; humans use their regular headers. Do not add Pokémon to NPC dossiers.
+${s.settings.playerEncounters&&!s.battle?'playerEncounters is ON: when the player\'s latest message makes a specific wild Pokémon appear now (any language or spelling), honor it: narrate that species appearing in front of the player and emit its encounter event with the English key, level near the lead partner. Wishes, plans and spoken hopes do not count. Legendaries still need their quest.\n':''}${fainted.length?'faintedParty Pokémon (hp 0) are back in their Poké Balls: absent from the scene, unable to battle, move, speak or cry until healed at a Pokémon Center or revived. Never narrate them acting or give them headers/dialogue. canBattle false: the player cannot battle until healed.\n':''}${s.lastBattle?'lastBattle is canon for the story: result, final HP/fainted states, opponents and events of the last finished battle. Keep narration consistent with it; never replay or contradict it.\n':''}For Pokémon cries/dialogue use <tr-header name="pokemon:UID"/> and <tr-dialogue name="pokemon:UID"> with the exact chatSpeaker ID above. Following narration belongs to that Pokémon; humans use their regular headers. Do not add Pokémon to NPC dossiers.
 The bag is the single Pokémon stock also shown in RoleForge; never duplicate its items in tretaresia_patch inventory ops.
 After visible narration append <!--roleforge_pokemon:{"version":5,"events":[...]}--> only for established events below. Each needs evidence copied EXACTLY from visible player-scene narration, not thoughts, hypotheticals, future offers or NPC cutaways. Evidence must name the species/item, current player and location where relevant. Thai names need displayName with that exact Thai spelling; stable keys stay English. JSON strings cannot contain literal newlines.
 - Wild Pokémon present before the player now: {"type":"encounter","key":"pidgey","level":3,"place":"Route 1","evidence":"A wild Pidgey appears in front of you on Route 1."}. Emit even without Explore. Never emit player catch, damage or ownership.

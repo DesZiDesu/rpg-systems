@@ -1,4 +1,4 @@
-import {battleSteps,drawStep,undrawStep,stepDuration} from './battle-vfx.js?v=0.94.2';
+import {battleSteps,drawStep,undrawStep,stepDuration} from './battle-vfx.js?v=0.95.0';
 // Presentation only: descriptors are derived from a successfully saved game.
 export function motionSequence(before,after,event,dex){
  if(!before||!after||!event)return [];

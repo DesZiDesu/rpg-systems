@@ -1,5 +1,5 @@
-import {isKeitai,KEITAI_INSTRUCTIONS} from './handset.js?v=0.94.2';
-import {APPS,clean,contactLabel,publicProfile} from './model.js?v=0.94.2';
+import {isKeitai,KEITAI_INSTRUCTIONS} from './handset.js?v=0.95.0';
+import {APPS,clean,contactLabel,publicProfile} from './model.js?v=0.95.0';
 
 const purposes={
  phone:'Calls: incoming/outgoing calls and text call dialogue; optional Voice Addon speech.',

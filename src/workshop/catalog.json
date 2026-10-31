@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.94.2",
+      "minimumRoleForge": "0.95.0",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -667,6 +667,17 @@
           "changes": [
             "ศึกคู่บนมือถือใช้สนามสี่เหลี่ยมจัตุรัสที่สูงขึ้น",
             "แถบ HP ไม่บังโปเกมอน และฐานของฝั่งตรงข้ามไม่บังตัวที่อยู่ใกล้กว่า"
+          ]
+        },
+        {
+          "version": "2.2.0",
+          "path": "packs/pokemon-2.2.0.json",
+          "sha256": "1a05f22c13de03a6920184b7bc33ab098ac5d55603f356638a26a74ea6855a72",
+          "bytes": 1308,
+          "changes": [
+            "ตัวเลือก: ผู้เล่นกำหนดโปเกมอนที่เจอจากการพิมพ์โรล",
+            "โปเกมอนทุกตัวใช้ Pokémon Header รวมโปเกมอนของ NPC และไม่ถูกสร้างเป็น NPC",
+            "การ์ด Pokémon RPG ไม่มีโปเกมอนในคลัง NPC แล้ว"
           ]
         }
       ]

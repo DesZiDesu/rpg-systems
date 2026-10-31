@@ -1,0 +1,31 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.95.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.2.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "player-encounters",
+      "title": "Player-chosen encounters",
+      "text": "Optional (Settings, off by default): when you narrate that a wild Pokémon appears in front of you, the battle starts with it at a level near your lead. Wishes, plans and spoken lines never count; legendaries still need their quest. The AI is told to honour Thai or other spellings too."
+    },
+    {
+      "id": "pokemon-header-only",
+      "title": "Every Pokémon uses the Pokémon header",
+      "text": "Species names, owner forms (Canari's Pikachu, Pikachu (Canari)) and pokemon IDs always resolve to a Pokémon header, ahead of any NPC record; Pokémon without an individual in the chat get a species header. The NPC system never creates a Pokémon as an NPC."
+    },
+    {
+      "id": "cards",
+      "title": "Pokémon RPG cards 1.3.1",
+      "text": "The NPC archive has no Pokémon at all (2,857 trainer records). Gazette's and Alfmorii's legendary companions live in their lore and trainer records."
+    }
+  ]
+}

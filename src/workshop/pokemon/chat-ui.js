@@ -2,7 +2,7 @@
 // background, so the header, narration and lines sit on whatever SillyTavern
 // background or RoleForge theme surrounds them. Type colour is the only accent.
 // Native RoleForge copy nodes are kept; only Pokémon-owned presentation changes.
-import {isPokemonSpeaker} from './chat.js?v=0.94.2';
+import {isPokemonSpeaker} from './chat.js?v=0.95.0';
 const make=(doc,tag,cls,text)=>{const node=doc.createElement(tag);node.className=cls;if(text!==undefined)node.textContent=text;return node;};
 const t=(th,en,language)=>language==='th'?th:en;
 export const TYPE_COLORS={normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',electric:'#f8d030',ice:'#98d8d8',fighting:'#c03028',poison:'#a040a0',ground:'#e0c068',flying:'#a890f0',psychic:'#f85888',bug:'#a8b820',rock:'#b8a038',ghost:'#705898',dragon:'#7038f8',dark:'#705848',steel:'#b8b8d0',fairy:'#ee99ac',stellar:'#7163cd'};
@@ -33,7 +33,7 @@ export function pokemonSpeakerHeader(profile,{language='en',open=()=>{},document
  if(p.speciesName&&p.speciesName!==p.name)kicker.append(make(doc,'span','pkc-species',p.speciesName+(p.form?' · '+p.form:'')));
  const owner=make(doc,'span','pkc-owner');owner.append(make(doc,'span','pkc-owner-label',p.ownerKind==='wild'?'':t('เจ้าของ ','Trainer ',language)),make(doc,'span','pkc-owner-name',ownerName));kicker.append(owner);
  const nameRow=make(doc,'span','trpg-identity pkc-name-row'),name=make(doc,'strong','pkc-name',p.name),gender=make(doc,'span','pkc-gender',p.gender==='male'?'♂':p.gender==='female'?'♀':'');gender.dataset.gender=p.gender;gender.setAttribute('aria-label',({male:t('เพศผู้','Male',language),female:t('เพศเมีย','Female',language),genderless:t('ไร้เพศ','Genderless',language),unknown:t('ไม่ทราบเพศ','Unknown gender',language)})[p.gender]);nameRow.append(name,gender);
- const facts=make(doc,'span','pkc-facts');facts.append(make(doc,'span','pkc-level','Lv. '+(p.level??'—')));
+ const facts=make(doc,'span','pkc-facts');if(!p.speciesOnly)facts.append(make(doc,'span','pkc-level','Lv. '+(p.level??'—')));
  for(const type of p.types){const chip=make(doc,'span','pkc-type',type.toUpperCase());chip.style.setProperty('--pkc-chip',typeColor(type));facts.append(chip);}
  const status=p.hp===0?[t('หมดสภาพ','Fainted',language),'FNT']:STATUS[p.status];if(status){const badge=make(doc,'span','pkc-status',language==='th'?status[0]:status[1]);badge.title=status[0];facts.append(badge);}
  const vitals=make(doc,'span','pkc-vitals'),valid=p.hp!==null&&p.maxHp>0,ratio=valid?Math.max(0,Math.min(1,p.hp/p.maxHp)):0;
@@ -41,7 +41,8 @@ export function pokemonSpeakerHeader(profile,{language='en',open=()=>{},document
  const track=make(doc,'span','pkc-hp-track'),fill=make(doc,'span','pkc-hp-fill');fill.style.setProperty('--pkc-hp',String(ratio));
  if(valid){track.setAttribute('role','progressbar');track.setAttribute('aria-label','HP');track.setAttribute('aria-valuenow',String(p.hp));track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(p.maxHp));}
  track.append(fill);vitals.append(make(doc,'span','pkc-hp-label','HP'),track,make(doc,'span','pkc-hp-value',valid?p.hp+' / '+p.maxHp:'—'));
- main.append(kicker,nameRow,facts,vitals);button.append(art,main);return button;
+ // A species-only header (no individual in this chat) has no level or HP.
+ main.append(kicker,nameRow,facts,...p.speciesOnly?[]:[vitals]);button.append(art,main);return button;
 }
 // Lines the author already wrapped in quotes keep theirs; others get “ ”.
 const QUOTED=/^\s*["“”「『«‘']/u;
