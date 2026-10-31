@@ -1,0 +1,31 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.92.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "1.9.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "kinetic",
+      "title": "Kinetic redesign",
+      "text": "Every Pokémon screen has a new default look: flat panels, Lucide line icons, Chakra Petch type and motion that follows the Animations setting. Phones get a bottom tab bar, safe-area spacing and thumb-sized controls. Original and Aperture remain in Settings."
+    },
+    {
+      "id": "battle-motion",
+      "title": "Poké Ball and move effects",
+      "text": "Pokémon are thrown out of and recalled into their balls, fainted and caught Pokémon return to a ball, and moves and status conditions play visual effects."
+    },
+    {
+      "id": "sizing",
+      "title": "Battle sprite sizing",
+      "text": "Battle Pokémon are sized by their visible pixels and species height, so HD models such as Giratina no longer appear tiny next to pixel sprites."
+    }
+  ]
+}

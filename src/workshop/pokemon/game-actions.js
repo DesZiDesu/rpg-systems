@@ -1,6 +1,6 @@
-import {traitsFor,validateTraits,refreshStats} from './specimens.js?v=0.91.0';
-import {supportedMove} from './battle-rules.js?v=0.91.0';
-import {itemEffect,machineOptions} from './items.js?v=0.91.0';
+import {traitsFor,validateTraits,refreshStats} from './specimens.js?v=0.92.0';
+import {supportedMove} from './battle-rules.js?v=0.92.0';
+import {itemEffect,machineOptions} from './items.js?v=0.92.0';
 const check=(ok,msg)=>{if(!ok)throw Error(msg);};
 export function trainingChoices(s,dex,uid){const m=s.pokemon[uid],p=m&&dex.get(m.key);if(!p)return[];const data=dex.training?.[p.pokemonId]||{level:p.learnset,machine:[],tutor:[]},rows=new Map();for(const [level,id]of data.level||[])if(level<=m.level)rows.set(id,{id,method:'level',level});for(const id of data.tutor||[])if(!rows.has(id))rows.set(id,{id,method:'tutor'});for(const id of data.machine||[])if(!rows.has(id))rows.set(id,{id,method:'machine'});return[...rows.values()].filter(v=>dex.moves[v.id]).map(v=>({...v,move:dex.moves[v.id],supported:supportedMove(dex,v.id),known:m.moves.some(slot=>slot.id===v.id),machines:machineOptions(dex,p,v.id)})).sort((a,b)=>a.move.name.localeCompare(b.move.name));}
 export function expansionAction(s,e,dex,{create,log}){

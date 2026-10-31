@@ -1,5 +1,5 @@
-import {reconcileRelationshipTurn} from '../../relationship-tracking.js?v=0.91.0';
-import {relationshipPromptReference,relationshipLink} from '../../relationship-core.js?v=0.91.0';
+import {reconcileRelationshipTurn} from '../../relationship-tracking.js?v=0.92.0';
+import {relationshipPromptReference,relationshipLink} from '../../relationship-core.js?v=0.92.0';
 
 export const PHONE_RELATIONSHIP_INSTRUCTIONS='On every completed phone reply, evaluate confirmed feelings and agreements, not just message delivery. Emit top-level relationshipEvents with stable NPC/player IDs, kind, exact evidence from a delivered message/call line, and small changes such as trust:1 or interest:1. Use the supplied relationship reference. Only the actual speaker may declare their own feelings; do not invent the player’s feelings or reciprocal affection. A direct conversation identifies the addressee; group “you” is ambiguous unless named. Remote text, sexting, a claim about an encounter, a sticker or an attachment is NOT an actual physical act: never change encounters, body counters, pregnancy or H-Stats from it. Ordinary greetings and logistical plans require no gain. Keep established partners and configured pacing. Do not use NPC profile fields or npcValues for feelings.';
 export function phoneRelationshipReference(phone,state){

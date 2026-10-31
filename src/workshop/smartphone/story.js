@@ -1,6 +1,6 @@
-import {incomingContactId} from './incoming.js?v=0.91.0';
-import {fingerprint} from './model.js?v=0.91.0';
-import {phoneNpcNames} from './identity.js?v=0.91.0';
+import {incomingContactId} from './incoming.js?v=0.92.0';
+import {fingerprint} from './model.js?v=0.92.0';
+import {phoneNpcNames} from './identity.js?v=0.92.0';
 
 export function phoneSceneText(value){
  return String(value||'').replace(/<(?:think|thinking|planning|tr-thought)\b[^>]*>[\s\S]*?<\/(?:think|thinking|planning|tr-thought)>/giu,'').replace(/\|[^|]*\|/gu,'').replace(/<rf-phone>[\s\S]*?<\/rf-phone>/giu,'').trim();

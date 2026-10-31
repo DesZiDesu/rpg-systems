@@ -8,12 +8,12 @@ const require=createRequire(import.meta.url),{chromium}=require(process.env.CODE
 const base=process.env.ST_REAL_URL||'http://127.0.0.1:18404',out=process.env.PK_VIDEO_ARTIFACTS||'/workspace/artifacts/pokemon-immediate-trainer';
 assert(['127.0.0.1','localhost'].includes(new URL(base).hostname));await mkdir(out+'/proof',{recursive:true});await mkdir(out+'/videos',{recursive:true});
 const cacheRoot=process.env.PK_MEDIA_CACHE||'/workspace/artifacts/pokemon-main-chat-battles/media-cache';let media={};try{media=JSON.parse(await readFile(cacheRoot+'/index.json','utf8'));}catch{}
-const report={host:'SillyTavern 1.19.0',release:'0.91.0',liveModel:false,storyReplies:'controlled fixtures through native ST rendering/events',gameplay:'production UI and engine only',subtitles:false,audio:false,cases:[],errors:[]};
+const report={host:'SillyTavern 1.19.0',release:'0.92.0',liveModel:false,storyReplies:'controlled fixtures through native ST rendering/events',gameplay:'production UI and engine only',subtitles:false,audio:false,cases:[],errors:[]};
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});let p,ctx,device;
 const app=()=>p.locator('#roleforge-pokemon');
 const world=()=>p.evaluate(()=>RoleForgePokemon.world());
 const pause=ms=>p.waitForTimeout(ms);
-async function ready(){await p.waitForFunction(()=>globalThis.TretaresiaRelease==='0.91.0'&&globalThis.RoleForgeWorkshop&&SillyTavern.getContext().eventSource.autoFireLastArgs?.has(SillyTavern.getContext().eventTypes.APP_READY),null,{timeout:120000});}
+async function ready(){await p.waitForFunction(()=>globalThis.TretaresiaRelease==='0.92.0'&&globalThis.RoleForgeWorkshop&&SillyTavern.getContext().eventSource.autoFireLastArgs?.has(SillyTavern.getContext().eventTypes.APP_READY),null,{timeout:120000});}
 async function setting(key,value){await p.locator('[data-presentation-setting="'+key+'"]').first().evaluate((n,value)=>{if(n.type==='checkbox')n.checked=value;else n.value=value;n.dispatchEvent(new Event('change',{bubbles:true}));},value);await p.waitForFunction(key=>!document.querySelector('[data-presentation-setting="'+key+'"]')?.disabled,key);await pause(150);}
 async function smooth(node){await node.evaluate(n=>n.scrollIntoView({block:'center',behavior:'smooth'}));await pause(650);}
 async function click(action,extra=''){const node=app().locator('[data-pk-action="'+action+'"]'+extra+':visible').first();await smooth(node);await node.click();await p.waitForFunction(()=>!RoleForgePokemon.debug().mutating&&!RoleForgePokemon.debug().working);}

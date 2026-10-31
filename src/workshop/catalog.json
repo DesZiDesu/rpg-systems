@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.91.0",
+      "minimumRoleForge": "0.92.0",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -613,6 +613,17 @@
             "NPC มีทีมโปเกมอนประจำตัว และขอประลองในโรลแล้วเริ่มศึกได้ทันที",
             "โปเกมอนที่หมดสภาพกลับเข้าบอล และแชทหลักรู้ผลการต่อสู้ครบ",
             "เลือกภาพได้ 38 แบบตั้งแต่ Gen I ถึง Scarlet & Violet และปรับโอกาสพบ Shiny"
+          ]
+        },
+        {
+          "version": "1.9.0",
+          "path": "packs/pokemon-1.9.0.json",
+          "sha256": "3946802668fc645f149037dc0a50a3d31894abed5790af665bf03c84364ac6a4",
+          "bytes": 1135,
+          "changes": [
+            "ออกแบบหน้าตาใหม่ทั้งหมด (Kinetic) ไอคอน Lucide และแอนิเมชันทุกหน้า",
+            "มือถือมีแถบเมนูด้านล่าง ปุ่มขนาดนิ้วโป้ง และรองรับขอบจอ iPhone/Android",
+            "ปาบอลเรียกออก-เก็บกลับ เอฟเฟกต์ท่าและสถานะ และขนาดโปเกมอนในฉากสู้ที่สมจริงขึ้น"
           ]
         }
       ]
