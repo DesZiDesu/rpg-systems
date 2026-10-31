@@ -97,7 +97,7 @@ try{
         const npc=await add(page,'<tr-header name="Cora"/><tr-narrative>She waits.</tr-narrative><tr-dialogue name="Cora">Hello. |still speech|</tr-dialogue>',{user:false});
         assert.equal(await row(page,npc).locator('.trpg-dialogue').count(),1);assert.equal(await row(page,npc).locator('.trpg-user-chat,.trpg-user-thought').count(),0);
         const aiPlain=await add(page,'*A normal action.* "Normal speech." |Normal symbols.|',{user:false});assert.equal(await row(page,aiPlain).locator('.trpg-dialogue,.trpg-narrative,.trpg-user-thought,.trpg-user-header').count(),0,'AI shorthand remains native with NPC presentation enabled as well');
-        await page.evaluate(()=>{window.host.extensionSettings.tretaresia_rpg.enableVoiceAddon=true;});await toggle(page,true);
+        await page.locator('[data-optional-setting="enableVoiceAddon"]').first().evaluate(node=>{node.checked=true;node.dispatchEvent(new Event('change',{bubbles:true}));});await toggle(page,true);
         assert.equal(await row(page,next).locator('.rf-voice-play,[data-voice-play-all]').count(),0,'Voice enabled still cannot attach speech controls to player cards');assert(await row(page,npc).locator('.rf-voice-play').count()>0,'assistant Voice decoration continues to work');
         await page.reload();await page.waitForFunction(()=>window.userChatPreview?.ready);await page.waitForTimeout(180);assert.equal(await control(page).isChecked(),true,'user-only option persists after reload');assert.equal(await page.locator('.trpg-user-chat').count(),1);
         // Hosts without eventSource.off must not revive a disposed renderer.

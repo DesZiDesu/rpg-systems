@@ -95,7 +95,7 @@ try{
   }
   await change(page,'showChatHeader',false);await change(page,'showChatDialogue',false);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-header`).count(),0);assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue.trpg-unframed`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-narrative:not(.trpg-unframed)`).count(),1);assert.equal(await page.locator(`[mesid="${user}"] .trpg-user-thought`).count(),1);
   assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>getComputedStyle(n,'::before').content),JSON.stringify('"'));
-  assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>getComputedStyle(n).color),await page.locator(`[mesid="${user}"] .trpg-user-thought small`).evaluate(n=>getComputedStyle(n).color),'unframed player speech uses the player accent with Header off');
+  assert.equal(await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>getComputedStyle(n).color),await page.locator(`[mesid="${user}"] .trpg-dialogue-copy`).evaluate(n=>{const probe=document.createElement('span');probe.style.color='var(--speaker)';n.parentElement.append(probe);const color=getComputedStyle(probe).color;probe.remove();return color;}),'unframed player speech uses the player accent with Header off');
   await change(page,'showChatNarrative',false);
   assert.deepEqual(await page.locator(`[mesid="${user}"] .trpg-prose-copy`).evaluate(n=>({style:getComputedStyle(n).fontStyle,marks:['::before','::after'].map(p=>getComputedStyle(n,p).content)})),{style:'italic',marks:['none','none']});
   assert.equal(await page.evaluate(id=>window.host.chat[id].mes,user),'*I open the door.* "Hello." |Be careful.|');
@@ -121,7 +121,7 @@ try{
   assert.equal(await page.evaluate(()=>window.themeAiCalls),0,'frame switches never call AI');
   // All approved designs use the same native per-chat transaction and leave
   // whole-message Regex cards, player shorthand and raw story untouched.
-  for(const theme of ['chapter','codex','aincrad']){
+  for(const theme of ['chapter','codex','pokemon','pokemon-dark','aincrad']){
    await choose(page,'chatTheme',theme);
    assert.equal(await row.locator('.trpg-chat').first().getAttribute('data-rf-chat-theme'),theme);
    assert.equal(await row.locator('.trpg-header').count(),0);assert.equal(await row.locator('.trpg-dialogue.trpg-unframed').count(),1);
@@ -152,6 +152,6 @@ try{
   assert.equal(await control(page,'chatTheme').inputValue(),'aincrad','approved design survives reload');
   assert.equal(await control(page,'chatNpcVitals').isChecked(),false);assert.equal(await control(page,'chatEffects').isChecked(),false);
   await page.locator('.rf-chat-theme-preview').evaluate(n=>n.open=true);await page.locator('.rf-chat-theme-preview .trpg-narrative').waitFor();await page.locator('.rf-chat-appearance-settings').screenshot({path:`${artifacts}/settings-${width}.png`});
-  assert.deepEqual(errors,[]);console.log(`PASS 5 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at ${width}px`);await page.close();
+  assert.deepEqual(errors,[]);console.log(`PASS 7 themes, 8 independent frame combinations, user UI, Regex identity, rollback, card defaults, NPC HUD and per-chat persistence at ${width}px`);await page.close();
  }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
