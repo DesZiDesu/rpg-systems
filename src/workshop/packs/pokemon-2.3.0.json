@@ -1,0 +1,31 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.96.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.3.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "poke-mart",
+      "title": "Poké Mart",
+      "text": "Buy and sell items in the Pokémon window. Cities and towns have a Mart; the story can open specialty shops. Prices come from the item catalogue, stock grows with badges, shops buy at half price, and every 10 Poké Balls bring a Premier Ball. Items go straight into the Pokémon bag and the price comes out of your RoleForge wallet in the same save."
+    },
+    {
+      "id": "prize-money",
+      "title": "Trainer prize money",
+      "text": "Beating a trainer pays the highest opponent level × 40 (Gym Leader 100, Elite Four and Champion 200). Story Gym Leaders now award badges. Paying half when you lose is optional and off by default."
+    },
+    {
+      "id": "shop-settings",
+      "title": "Shop settings",
+      "text": "Settings > Shop & prize money turns the shop, prize money, the defeat penalty, the Premier Ball bonus and selling on or off, sets prices from ×0.5 to ×2 and offers a Sandbox shop that works anywhere."
+    }
+  ]
+}

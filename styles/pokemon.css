@@ -1072,3 +1072,79 @@
 .rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=night] .pk-battle-sprite{filter:brightness(.86) saturate(.9)}
 .rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=dusk] img.pk-platform-art{filter:brightness(.82) sepia(.25) saturate(1.1)}
 .rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=dawn] img.pk-platform-art{filter:brightness(.95) sepia(.12)}
+/* Poké Mart: Journey entry card, Buy/Sell list, quantity sheet and receipt. */
+.rfpk .pk-shop-entry{position:relative;overflow:hidden;display:grid;gap:6px;margin:0 0 16px;padding:16px;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff}
+.rfpk .pk-shop-entry::after{content:"";position:absolute;right:-34px;top:-34px;width:130px;height:130px;border-radius:50%;border:16px solid #ffffff1f;pointer-events:none}
+.rfpk .pk-shop-entry .pk-eyebrow{color:#ffffffcc}
+.rfpk .pk-shop-entry-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rfpk .pk-shop-open{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;background:#ffffff2e;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.rfpk .pk-shop-open i{width:7px;height:7px;border-radius:50%;background:#4ade80}
+.rfpk .pk-shop-entry h2{margin:0;font-size:20px;color:#fff}
+.rfpk .pk-shop-entry p{margin:0;font-size:13px;color:#ffffffd9}
+.rfpk .pk-shop-entry .pk-shop-go{position:relative;z-index:1;justify-self:start;display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 16px;margin-top:4px;background:#fff;color:#1d4ed8;border:0;font-weight:700}
+.rfpk .pk-shop-wallet{display:grid;justify-items:end;padding:6px 12px;border:1px solid var(--pk-line);background:var(--pk-panel);color:var(--pk-text)}
+.rfpk .pk-shop-wallet small{font-size:10px;letter-spacing:.14em;color:var(--pk-muted);font-weight:700}
+.rfpk .pk-shop-wallet strong{font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rfpk .pk-shop-clerk{display:flex;gap:10px;align-items:center;padding:10px 12px;margin-bottom:12px;background:var(--pk-text);color:var(--pk-panel)}
+.rfpk .pk-shop-avatar{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#2563eb;color:#fff}
+.rfpk .pk-shop-avatar svg{width:17px!important;height:17px!important}
+.rfpk .pk-shop-clerk p{margin:0;font-size:13px;line-height:1.45}
+.rfpk .pk-shop-clerk b{display:block;font-size:10px;letter-spacing:.16em;opacity:.7}
+.rfpk .pk-shop-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:8px;background:var(--pk-soft)}
+.rfpk .pk-shop-tabs button{min-height:42px;border:0;background:transparent;color:var(--pk-muted);font-weight:700}
+.rfpk .pk-shop-tabs button[aria-selected=true]{background:var(--pk-text);color:var(--pk-panel)}
+.rfpk .pk-shop-list{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.rfpk .pk-shop-row{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:8px 12px;text-align:left;background:var(--pk-panel);color:var(--pk-text);border:1px solid var(--pk-line)}
+.rfpk button.pk-shop-row:hover{border-color:var(--pk-text)}
+.rfpk .pk-shop-row.is-locked{opacity:.55}
+.rfpk .pk-shop-icon{flex:none;display:grid;place-items:center;width:40px;height:40px}
+.rfpk .pk-shop-icon img{width:36px;height:36px;image-rendering:pixelated}
+.rfpk .pk-shop-icon svg{width:22px;height:22px}
+.rfpk .pk-shop-copy{flex:1;min-width:0;display:grid;gap:2px}
+.rfpk .pk-shop-copy strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rfpk .pk-shop-copy small{font-size:12px;color:var(--pk-muted)}
+.rfpk .pk-shop-price{font-weight:700;font-size:15px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rfpk .pk-shop-price small{display:block;font-size:10px;color:var(--pk-muted);font-weight:600}
+.rfpk .pk-shop-price.is-note{font-size:12px;color:var(--pk-muted)}
+.rfpk .pk-shop-row.is-short .pk-shop-price,.rfpk .pk-shop-row.is-short small{color:var(--pk-red)}
+.rfpk .pk-shop-empty{padding:24px 0;text-align:center}
+.rfpk .pk-shop-scrim{position:fixed;inset:0;z-index:40;background:#0a112073;animation:pk-shop-fade .2s both}
+.rfpk .pk-shop-sheet{position:fixed;z-index:41;left:50%;bottom:0;width:min(100%,520px);translate:-50% 0;display:grid;gap:12px;max-height:calc(100% - 12px);overflow:auto;overscroll-behavior:contain;padding:10px 18px 0;background:var(--pk-panel);color:var(--pk-text);box-shadow:0 -12px 40px #0006;animation:pk-shop-up .32s cubic-bezier(.2,.9,.3,1.15) both}
+.rfpk .pk-shop-grab{justify-self:center;width:40px;height:4px;border-radius:4px;background:var(--pk-line)}
+.rfpk .pk-shop-hero{display:flex;gap:14px;align-items:center}
+.rfpk .pk-shop-hero-icon{flex:none;display:grid;place-items:center;width:68px;height:68px;background:var(--pk-soft)}
+.rfpk .pk-shop-hero-icon img{width:52px;height:52px;image-rendering:pixelated}
+.rfpk .pk-shop-hero-icon svg{width:30px;height:30px}
+.rfpk .pk-shop-hero h2{margin:2px 0;font-size:22px}
+.rfpk .pk-shop-hero p{margin:0;color:var(--pk-muted);font-size:13px}
+.rfpk .pk-shop-stepper{display:flex;align-items:center;justify-content:space-between;padding:6px;border:1px solid var(--pk-line)}
+.rfpk .pk-shop-stepper button{width:52px;height:44px;font-size:22px;font-weight:700;border:0;background:var(--pk-soft);color:var(--pk-text)}
+.rfpk .pk-shop-stepper output{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.rfpk .pk-shop-quick{display:flex;gap:6px}
+.rfpk .pk-shop-quick button{flex:1;min-height:40px;border:1px solid var(--pk-line);background:var(--pk-panel);color:var(--pk-text);font-weight:600}
+.rfpk .pk-shop-quick button[aria-pressed=true]{background:var(--pk-text);color:var(--pk-panel);border-color:var(--pk-text)}
+.rfpk .pk-shop-bonus{display:flex;align-items:center;gap:8px;margin:0;padding:8px 10px;background:#fff7e0;border:1px solid #f3d27a;color:#7a5200;font-size:13px}
+.rfpk .pk-shop-bonus img{width:24px;height:24px;image-rendering:pixelated}
+.rfpk .pk-shop-sum{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:0;padding-top:10px;border-top:1px dashed var(--pk-line);font-size:14px}
+.rfpk .pk-shop-sum dt{color:var(--pk-muted)}
+.rfpk .pk-shop-sum dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.rfpk .pk-shop-why{margin:0;color:var(--pk-red);font-weight:600;font-size:13px}
+.rfpk .pk-shop-cta{position:sticky;bottom:0;z-index:1;width:100%;min-height:50px!important;font-size:16px!important}
+.rfpk .pk-shop-cancel{margin-bottom:14px}
+.rfpk .pk-shop-sheet::after{content:"";position:sticky;bottom:0;display:block;height:0}
+.rfpk .pk-shop-cancel{width:100%}
+.rfpk .pk-shop-receipt{display:grid;gap:10px;max-width:520px;margin:8px auto;padding:22px 18px;background:var(--pk-panel);border:1px solid var(--pk-line);text-align:center}
+.rfpk .pk-shop-ok{justify-self:center;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#16a34a;color:#fff;font-size:26px;font-weight:700}
+.rfpk .pk-shop-receipt h2{margin:0}
+.rfpk .pk-shop-receipt .pk-shop-sum{text-align:left}
+.rfpk .pk-shop-toast{position:sticky;bottom:12px;z-index:6;margin:12px 0 0;padding:10px 14px;background:#0f1b2d;color:#fff;font-weight:600;animation:pk-shop-fade .2s both}
+.rfpk .pk-shop-closed{display:grid;justify-items:center;gap:8px;padding:32px 16px;text-align:center;border:1px dashed var(--pk-line)}
+.rfpk .pk-shop-closed>svg{width:34px;height:34px;color:var(--pk-muted)}
+.rfpk .pk-shop-closed h2{margin:0}
+.rfpk .pk-shop-closed p{margin:0 0 8px;color:var(--pk-muted);max-width:44ch}
+.rfpk .pk-summary-money{margin:8px 0 0;font-weight:700;color:var(--pk-green)}
+.rfpk .pk-summary-money[data-kind=penalty]{color:var(--pk-red)}
+@keyframes pk-shop-fade{from{opacity:0}}
+@keyframes pk-shop-up{from{transform:translateY(100%)}}
+@media(max-height:760px){.rfpk .pk-shop-sheet{gap:9px}.rfpk .pk-shop-hero-icon{width:52px;height:52px}.rfpk .pk-shop-hero-icon img{width:40px;height:40px}.rfpk .pk-shop-hero h2{font-size:19px}.rfpk .pk-shop-stepper button{height:38px}.rfpk .pk-shop-stepper output{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-shop-sheet,.rfpk .pk-shop-scrim,.rfpk .pk-shop-toast{animation:none}}

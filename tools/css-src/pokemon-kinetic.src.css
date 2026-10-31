@@ -458,3 +458,16 @@ K .pk-stat-bars .pk-track{margin-right:0}
  K .pk-detail-lower>*{padding:14px!important}
  K .pk-dex-mode>span{padding:0 8px;font-size:11px}
 }
+/* Poké Mart: square panels, hard offset shadows and display numerals. */
+K :is(.pk-shop-row,.pk-shop-wallet,.pk-shop-receipt,.pk-shop-tabs button,.pk-shop-quick button,.pk-shop-stepper button,.pk-shop-hero-icon,.pk-shop-entry){border-radius:0}
+K button.pk-shop-row{box-shadow:none;font:inherit}
+K button.pk-shop-row:hover:not(:disabled){border-color:var(--k-ink);transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--k-line)}
+K :is(.pk-shop-copy strong,.pk-shop-price,.pk-shop-wallet strong,.pk-shop-stepper output,.pk-shop-hero h2,.pk-shop-entry h2,.pk-shop-receipt h2){font-family:var(--k-display)}
+K .pk-shop-entry{box-shadow:4px 4px 0 #1e3a8a}
+K .pk-shop-entry .pk-eyebrow{color:#ffffffd9!important}
+K .pk-shop-clerk b{color:inherit}
+K .pk-shop-clerk{background:var(--k-ink);color:var(--k-panel)}
+K .pk-shop-sheet{background:var(--k-panel);color:var(--k-ink);border-top:3px solid var(--k-red)}
+K .pk-shop-receipt{box-shadow:4px 4px 0 var(--k-line)}
+K[data-pk-scheme=dark] .pk-shop-bonus{background:#3a2d0a;border-color:#7a5d12;color:#fcd679}
+K[data-pk-scheme=dark] .pk-shop-toast{background:var(--k-ink);color:var(--k-bg)}

@@ -1,6 +1,6 @@
 // Read-only speaker projections. These never enter the NPC directory or game save.
-import {battleSpriteCandidates} from './battle-sprites.js?v=0.95.0';
-import {styleCandidates} from './sprite-styles.js?v=0.95.0';
+import {battleSpriteCandidates} from './battle-sprites.js?v=0.96.0';
+import {styleCandidates} from './sprite-styles.js?v=0.96.0';
 const key=value=>String(value||'').trim().normalize('NFKC').toLowerCase();
 const text=value=>typeof value==='string'?value.trim():'';
 const number=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?value:null;

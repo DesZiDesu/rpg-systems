@@ -376,13 +376,14 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.95.0",
+      "minimumRoleForge": "0.96.0",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
       "features": [
         "1,025 สายพันธุ์ พร้อม Ability และค่าสเตตัสรายตัว",
         "ไอเทมอ้างอิง 2,222 รายการ พร้อมบอล ยา และคลังร่วม",
+        "ร้าน Poké Mart ซื้อขายด้วยกระเป๋าเงิน RoleForge และเงินรางวัลจากเทรนเนอร์",
         "ฝึกท่า Center ยิม Kanto และรับคำท้าจาก Trainer ในโรล",
         "Sandbox ผู้เล่นควบคุม พร้อมบันทึกตามแชทและ Branch",
         "ภาพหน้า–หลังพิกเซล/โมเดลเคลื่อนไหว และภาพนิ่งสำรองตรงทิศ",
@@ -391,6 +392,7 @@
       "featuresEn": [
         "1,025 species with individual abilities, IVs, EVs, Nature and gender",
         "2,222-item catalogue; functional balls, medicines and shared stock",
+        "Poké Mart shopping with the RoleForge wallet, plus trainer prize money",
         "Move training, Centers, Kanto Gyms and accepted NPC trainer challenges",
         "Player-controlled Sandbox and branch-aware progress",
         "True front/back pixel/model animations and direction-correct static fallbacks",
@@ -678,6 +680,17 @@
             "ตัวเลือก: ผู้เล่นกำหนดโปเกมอนที่เจอจากการพิมพ์โรล",
             "โปเกมอนทุกตัวใช้ Pokémon Header รวมโปเกมอนของ NPC และไม่ถูกสร้างเป็น NPC",
             "การ์ด Pokémon RPG ไม่มีโปเกมอนในคลัง NPC แล้ว"
+          ]
+        },
+        {
+          "version": "2.3.0",
+          "path": "packs/pokemon-2.3.0.json",
+          "sha256": "0a32070cb8c59737cdcd753915cfff82e3c1f40f861a2e484fd5b461d28b1a10",
+          "bytes": 1309,
+          "changes": [
+            "ร้านค้า Poké Mart: ซื้อขายไอเทมด้วยกระเป๋าเงิน RoleForge ในการบันทึกครั้งเดียว",
+            "เงินรางวัลจากเทรนเนอร์ และหัวหน้ายิมในเนื้อเรื่องมอบเหรียญตรา",
+            "ตั้งค่าร้านค้าและเงินรางวัล: ราคา การขาย ของแถม และร้าน Sandbox"
           ]
         }
       ]

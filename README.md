@@ -1,5 +1,7 @@
 # RoleForge
 
+**RoleForge 0.96.0 / Pokémon 2.3.0 — Poké Mart and prize money.** Buy and sell Pokémon items in the Pokémon window: cities and towns have a Mart, the story can open specialty shops, stock grows with badges and prices come from the item catalogue. Items go into the Pokémon bag and the price comes out of the RoleForge wallet in one save. Beating trainers pays prize money, and story Gym Leaders award badges. [Thai guide and screenshots](docs/pokemon-v0.96.0.th.md).
+
 **RoleForge 0.95.0 / Pokémon 2.2.0 — player-chosen encounters and Pokémon-only headers.** An optional setting lets your own narration bring out a wild Pokémon. Every Pokémon (wild, party, NPC-owned or named by species) speaks through the Pokémon header and is never created as an NPC. The Pokémon RPG cards' NPC archive holds no Pokémon. [Thai guide](docs/pokemon-v0.95.0.th.md).
 
 **RoleForge 0.95.0 / Pokémon 2.1.0 — painted battle fields.** All 20 terrains have new painted scenes and floor bases, with light that follows the story clock (dawn, day, dusk, night), ambient particles and live weather; Classic FireRed stays in Settings. Double battles give the second Pokémon a base, Pokémon League themes get their own scene card, and catches no longer print a caption. [Thai guide and screenshots](docs/pokemon-v0.95.0.th.md).
@@ -54,7 +56,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Release build: 0.95.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Release build: 0.96.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

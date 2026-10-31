@@ -1,6 +1,7 @@
-import {TRANSFORMATION_SYSTEMS,TERA_TYPES,megaForms} from './transformations.js?v=0.95.0';
-import {normalizeWeather} from './mechanics.js?v=0.95.0';
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.95.0';
+import {TRANSFORMATION_SYSTEMS,TERA_TYPES,megaForms} from './transformations.js?v=0.96.0';
+import {normalizeWeather} from './mechanics.js?v=0.96.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.96.0';
+import {buyable,TRAINER_CLASSES} from './shop.js?v=0.96.0';
 const regions=['Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar','Paldea'];
 const known=(proof,canonical,e)=>proof.toLocaleLowerCase().includes(canonical.toLocaleLowerCase())||typeof e.displayName==='string'&&e.displayName.length>=2&&e.displayName.length<=100&&/[\u0e00-\u0e7f]/u.test(e.displayName)&&proof.includes(e.displayName);
 const negative=/ไม่พบ|ไม่ได้รับ|สมมติ|\b(?:not|would|could|if|might|will)\b|กำลังจะ|จะได้รับ/iu;
@@ -34,6 +35,15 @@ export function parsePokemonStory(source,dex){
    if(name.length<2||name.length>80||!proof.includes(name)||!team.length){reject('unproven-roster');continue;}
    events.push({...common,id:'story-'+m.index+'-'+i+'-roster',type:'roster',name,team});continue;
   }
+  // Protocol 5: the player is inside a shop now. Names and items come from the
+  // story; prices never do. Specialty shops list catalogue items only.
+  if(e.type==='shop'&&version>=5){
+   const name=String(e.name||'').trim(),place=String(e.place||'').trim(),kind=e.kind==='specialty'?'specialty':'mart';
+   if(name.length<2||name.length>80||place.length<2||place.length>120||!(proof.includes(name)||proof.includes(place))||!/shop|store|mart|market|boutique|counter|ร้าน|ตลาด|ห้าง|เคาน์เตอร์/iu.test(proof)){reject('unproven-shop');continue;}
+   const items=kind==='specialty'?[...new Set((Array.isArray(e.items)?e.items:[]).map(String))].filter(id=>buyable(dex,id)).slice(0,24):[];
+   if(kind==='specialty'&&!items.length){reject('empty-shop');continue;}
+   events.push({...common,id:'story-'+m.index+'-'+i+'-shop',type:'shop-open',name,place,kind,...items.length?{items}:{}});continue;
+  }
   if(e.type==='trainer'&&version>=3){
    const open=version>=5,name=String(e.name||'').trim(),place=String(e.place||'').trim(),team=open&&e.team===undefined?[]:e.team;
    if(name.length<2||name.length>80||!proof.includes(name)||!/คุณ|ผู้เล่น|\byou\b|\byour\b/iu.test(proof)||!(open?/ท้า|ประลอง|ต่อสู้|สู้|ดวล|แบทเทิล|challenge|battle|fight|duel|spar/iu:/ท้า|ประลอง|ต่อสู้|challenge|battle/iu).test(proof)||!open&&(!place||!proof.includes(place))||place.length>160||!Array.isArray(team)||!open&&team.length<1||team.length>6){reject('unproven-trainer');continue;}
@@ -53,7 +63,7 @@ export function parsePokemonStory(source,dex){
    // invitation (including one mislabeled by the model) remains an offer.
    const started=open&&/\b(?:sends?|sent|throws?|releases?) out\b|\baccepts? (?:your|the) (?:challenge|battle)\b|\bchallenge accepted\b|\blet'?s (?:battle|go)\b|\bbattle is on\b|ส่ง.{0,40}ออกมา|ปล่อย.{0,40}ออกมา|มา(?:ประลอง|สู้)กัน/iu.test(proof);
    const immediate=e.mode==='immediate'&&!/\bwill\b|จะเริ่ม|จะบังคับ|จะรับคำท้า/iu.test(proof)&&(started||/\b(?:battle (?:begins|starts)|forces? you (?:into|to) (?:a )?battle|attacks? you|you accept|you accepted)\b|เริ่ม(?:การ)?(?:ต่อสู้|ประลอง)|(?:การต่อสู้|การประลอง)เริ่ม|บังคับ(?:ให้)?คุณ(?:ต้อง)?(?:ต่อสู้|ประลอง)|คุณ(?:ตอบ)?รับคำท้า/iu.test(proof));
-   const partner=typeof e.partner==='string'?e.partner.trim().slice(0,60):'';events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved,equipment,...immediate?{mode:'immediate'}:{},...partner&&partner.toLocaleLowerCase()!==name.toLocaleLowerCase()&&proof.toLowerCase().includes(partner.toLowerCase())?{partner}:{}});continue;
+   const partner=typeof e.partner==='string'?e.partner.trim().slice(0,60):'',rank=TRAINER_CLASSES.includes(e.class)&&({'gym-leader':/gym|leader|ยิม/iu,'elite-four':/elite|จตุรเทพ/iu,champion:/champion|แชมป์/iu})[e.class].test(proof)?e.class:'';events.push({...common,type:'trainer-offer',trainerKey:'npc-'+sha256(name.toLocaleLowerCase()).slice(0,20),name,place,team:resolved,equipment,...rank?{class:rank}:{},...immediate?{mode:'immediate'}:{},...partner&&partner.toLocaleLowerCase()!==name.toLocaleLowerCase()&&proof.toLowerCase().includes(partner.toLowerCase())?{partner}:{}});continue;
   }
   const p=dex.get(e.key||e.speciesId);if(!p||!known(proof,p.name,e)){reject('unproven-species');continue;}
   if(e.type==='quest'&&modern){const place=String(e.place||'').trim();if(!(p.legendary||p.mythical)||place.length<2||place.length>160||!proof.includes(place)||!/quest|mission|task|ภารกิจ|มอบหมาย/iu.test(proof)){reject('unproven-quest');continue;}events.push({...common,type:'quest-offer',speciesId:p.speciesId,place,region:regions.includes(e.region)?e.region:undefined,wins:Math.max(0,Math.min(20,Number(e.wins)||0))});continue;}
