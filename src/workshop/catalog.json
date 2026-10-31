@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.93.0",
+      "minimumRoleForge": "0.94.0",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -635,6 +635,17 @@
             "ประลองคู่ (Double battle) เมื่อเทรนเนอร์สองคนท้าพร้อมกันในโรล",
             "Header โปเกมอนในแชทแบบไร้กรอบ และธีมแชท Pokémon League กลางวัน/กลางคืน",
             "โหมดมืด ช่องกระเป๋า กล่องแบบตาราง ชุดทีม ความคืบหน้า Pokédex สรุปผลการต่อสู้ ฉากจับและวิวัฒนาการ"
+          ]
+        },
+        {
+          "version": "2.1.0",
+          "path": "packs/pokemon-2.1.0.json",
+          "sha256": "0d6bb2062aea62cd42eb67deec82ee05cf2c50954720df755e238ec47e2cb0f1",
+          "bytes": 1026,
+          "changes": [
+            "สนามต่อสู้วาดใหม่ทั้ง 20 แบบ มีแสงตามเวลา อนุภาคบรรยากาศ และสภาพอากาศ",
+            "โปเกมอนตัวที่สองในศึกคู่มีฐานยืนของตัวเอง",
+            "การ์ดข้อมูลฉากแบบ Pokémon League และไม่มีข้อความขึ้นตอนจับโปเกมอน"
           ]
         }
       ]

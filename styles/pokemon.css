@@ -860,9 +860,6 @@
 #roleforge-pokemon[data-pk-layout=dossier] .pkv-splash .pkv-p{border-radius:0 50% 50% 50%!important}
 #roleforge-pokemon[data-pk-layout=dossier] .pkv-leaf .pkv-p{border-radius:0 100% 0 100%!important}
 .rfpk .pkv-paralysis i{width:9px!important;height:34px!important}
-/* Catch result line, shown when the ball clicks or breaks open. */
-.rfpk .pkm-catch-caption{position:absolute;z-index:12;left:50%;bottom:6%;max-width:88%;padding:6px 14px;transform:translate(-50%,8px);opacity:0;background:#0f1b2dee;color:#fff;font:600 clamp(12px,2.4cqw,16px)/1.4 PKKinetic,PKArchive,PKArchiveThai,system-ui,sans-serif;letter-spacing:.02em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s,transform .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
-.rfpk .pkm-catch-caption.is-shown{opacity:1;transform:translate(-50%,0)}
 /* Evolution scene: fills the open window, theme independent. */
 .rfpk .pk-evo-scene{position:absolute;inset:0;z-index:80;display:grid;place-content:center;justify-items:center;gap:18px;padding:24px 16px max(24px,env(safe-area-inset-bottom));background:radial-gradient(circle at 50% 42%,#1e3a5f 0,#0b1220 62%);color:#fff;animation:pk-evo-in .35s ease-out both}
 .rfpk .pk-evo-scene.is-leaving{animation:pk-evo-out .26s ease-in forwards}
@@ -992,3 +989,60 @@
 .rfpk .pk-double-step small{opacity:.7}
 .rfpk .pk-double-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:8px}
 .rfpk .pk-double-slots{display:flex;gap:8px;margin:0 0 8px;overflow-x:auto}
+/* Painted fields: SVG scenes, a slow camera drift, light that follows the
+   story clock outdoors, ambient particles per terrain and live weather.
+   Classic FireRed fields keep the rules above. */
+.rfpk .pk-arena[data-pk-field-art=painted] .pk-background-layer{inset:-3%;background-size:cover;background-position:center;image-rendering:auto;animation:pk-field-drift 38s ease-in-out infinite alternate}
+.rfpk .pk-arena[data-pk-field-art=painted] img.pk-platform-art{image-rendering:auto;object-fit:fill;filter:drop-shadow(0 6px 6px #0002)}
+@keyframes pk-field-drift{from{transform:scale(1.04) translate(-.8%,.4%)}to{transform:scale(1.08) translate(.8%,-.6%)}}
+.rfpk .pk-field-light,.rfpk .pk-field-ambient{position:absolute;inset:0;pointer-events:none;z-index:0}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=dawn] .pk-field-light{background:linear-gradient(180deg,#ff9a7a55,#ffd2a033 45%,#ffe4b000);mix-blend-mode:soft-light}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=dusk] .pk-field-light{background:linear-gradient(180deg,#ff6a4a88,#ff9f6a55 40%,#7a4fb044);mix-blend-mode:multiply}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=night] .pk-field-light{background:radial-gradient(circle at 78% 12%,#fdf6d8 0 1.6%,#fdf6d855 2.2%,transparent 9%),linear-gradient(180deg,#0a1636e6,#13234fb3 45%,#1b2b55a6);mix-blend-mode:multiply}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=night] .pk-field-light:after{content:'';position:absolute;inset:0 0 58% 0;background-image:radial-gradient(1.2px 1.2px at 12% 20%,#fff,transparent),radial-gradient(1px 1px at 33% 8%,#fff,transparent),radial-gradient(1.4px 1.4px at 52% 26%,#fff,transparent),radial-gradient(1px 1px at 64% 12%,#fff,transparent),radial-gradient(1.2px 1.2px at 88% 30%,#fff,transparent),radial-gradient(1px 1px at 22% 36%,#fff,transparent),radial-gradient(1px 1px at 72% 40%,#fff,transparent),radial-gradient(1.3px 1.3px at 6% 6%,#fff,transparent);mix-blend-mode:screen;animation:pk-stars 4s ease-in-out infinite alternate}
+@keyframes pk-stars{to{opacity:.55}}
+/* Ambient particles: two tiled layers drifting at different speeds. */
+.rfpk .pk-field-ambient i{position:absolute;inset:-20%;background-repeat:repeat;opacity:.85}
+.rfpk .pk-field-ambient i:first-child{background-size:240px 220px;animation:pk-amb-a 22s linear infinite}
+.rfpk .pk-field-ambient i:last-child{background-size:380px 330px;animation:pk-amb-b 34s linear infinite;opacity:.6}
+@keyframes pk-amb-a{to{background-position:240px -220px}}
+@keyframes pk-amb-b{to{background-position:-380px -330px}}
+@keyframes pk-amb-fall{to{background-position:60px 330px}}
+@keyframes pk-amb-twinkle{50%{opacity:.25}}
+/* Pollen and petals over meadows and mountains by day. */
+.rfpk .pk-arena:is([data-terrain=grass],[data-terrain=longgrass],[data-terrain=mountain],[data-terrain=pond]) .pk-field-ambient i{background-image:radial-gradient(2px 2px at 20px 30px,#fff9,transparent),radial-gradient(2.5px 2.5px at 120px 90px,#fff6b0bb,transparent),radial-gradient(2px 2px at 190px 160px,#ffe0ee99,transparent),radial-gradient(1.6px 1.6px at 70px 190px,#fff8,transparent)}
+/* Fireflies at night outdoors. */
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=night] .pk-field-ambient i{background-image:radial-gradient(3px 3px at 30px 40px,#e8ff8a,#c8ff5a55 60%,transparent),radial-gradient(2.5px 2.5px at 150px 120px,#e8ff8a,#c8ff5a55 60%,transparent),radial-gradient(3px 3px at 200px 190px,#f4ff9a,#c8ff5a44 60%,transparent);filter:drop-shadow(0 0 4px #d6ff6a);animation-duration:40s,60s}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=night] .pk-field-ambient{animation:pk-amb-twinkle 3.2s ease-in-out infinite}
+/* Sun glints over sand and open water. */
+.rfpk .pk-arena:is([data-terrain=sand],[data-terrain=water]) .pk-field-ambient i{inset:40% 0 0 0;background-image:radial-gradient(2px 2px at 40px 60px,#fff,transparent),radial-gradient(1.6px 1.6px at 170px 140px,#fff,transparent),radial-gradient(2.2px 2.2px at 110px 20px,#fff,transparent);animation:pk-amb-twinkle 2.6s ease-in-out infinite}
+.rfpk .pk-arena:is([data-terrain=sand],[data-terrain=water]) .pk-field-ambient i:last-child{animation-delay:-1.3s}
+/* Bubbles rise underwater. */
+.rfpk .pk-arena[data-terrain=underwater] .pk-field-ambient i{background-image:radial-gradient(circle at 40px 60px,transparent 3px,#e8fbffcc 3.5px,transparent 5px),radial-gradient(circle at 170px 150px,transparent 5px,#e8fbffaa 5.5px,transparent 7px),radial-gradient(circle at 110px 20px,transparent 2px,#e8fbffcc 2.5px,transparent 4px)}
+.rfpk .pk-arena[data-terrain=underwater] .pk-field-ambient i:first-child{animation:pk-amb-rise 9s linear infinite}
+.rfpk .pk-arena[data-terrain=underwater] .pk-field-ambient i:last-child{animation:pk-amb-rise 14s linear infinite}
+@keyframes pk-amb-rise{to{background-position:20px -330px}}
+/* Dust motes drift in caves, houses and arenas. */
+.rfpk .pk-arena:is([data-terrain=cave],[data-terrain=building],[data-terrain^=indoor]) .pk-field-ambient i{background-image:radial-gradient(1.6px 1.6px at 30px 50px,#fff8,transparent),radial-gradient(1.2px 1.2px at 160px 140px,#fff6,transparent),radial-gradient(2px 2px at 90px 200px,#fff5,transparent)}
+.rfpk .pk-arena[data-terrain=cave] .pk-field-ambient i{background-image:radial-gradient(1.6px 1.6px at 30px 50px,#b8f4ff,transparent),radial-gradient(1.4px 1.4px at 160px 140px,#e2b8ff,transparent),radial-gradient(2px 2px at 90px 200px,#fff5,transparent)}
+.rfpk .pk-arena[data-terrain=indoor-lorelei] .pk-field-ambient i{background-image:radial-gradient(2.5px 2.5px at 30px 40px,#fff,transparent),radial-gradient(2px 2px at 150px 130px,#e8fbff,transparent),radial-gradient(3px 3px at 90px 210px,#fff,transparent);animation:pk-amb-fall 12s linear infinite}
+.rfpk .pk-arena[data-terrain=indoor-agatha] .pk-field-ambient i{background-image:radial-gradient(4px 4px at 40px 60px,#d9b8ff99,transparent),radial-gradient(6px 6px at 170px 150px,#b47bff66,transparent);filter:blur(1px)}
+.rfpk .pk-arena[data-terrain=indoor-champion] .pk-field-ambient i{background-image:radial-gradient(2px 2px at 30px 40px,#ffd36a,transparent),radial-gradient(1.6px 1.6px at 150px 120px,#fff6d8,transparent),radial-gradient(2.4px 2.4px at 90px 200px,#ffe39a,transparent)}
+/* Live battle weather on painted fields. */
+.rfpk .pk-arena[data-pk-field-art=painted][data-pk-weather=rain] .pk-field-ambient i,.rfpk .pk-arena[data-pk-field-art=painted][data-pk-weather=heavy-rain] .pk-field-ambient i{background-image:linear-gradient(105deg,transparent 48%,#dbefff99 49%,transparent 51%);background-size:26px 70px;animation:pk-rain .45s linear infinite;opacity:.7}
+.rfpk .pk-arena[data-pk-field-art=painted][data-pk-weather=rain] .pk-field-ambient i:last-child{background-size:40px 110px;animation-duration:.6s}
+.rfpk .pk-arena[data-pk-field-art=painted]:is([data-pk-weather=rain],[data-pk-weather=heavy-rain]) .pk-field-light{background:linear-gradient(180deg,#3a4a6299,#5a6a8266);mix-blend-mode:multiply}
+@keyframes pk-rain{to{background-position:-20px 110px}}
+.rfpk .pk-arena[data-pk-field-art=painted]:is([data-pk-weather=snow],[data-pk-weather=hail]) .pk-field-ambient i{background-image:radial-gradient(3px 3px at 30px 40px,#fff,transparent),radial-gradient(2px 2px at 150px 130px,#fff,transparent),radial-gradient(3.5px 3.5px at 90px 210px,#fff,transparent);animation:pk-amb-fall 9s linear infinite;opacity:.95}
+.rfpk .pk-arena[data-pk-field-art=painted]:is([data-pk-weather=snow],[data-pk-weather=hail]) .pk-field-light{background:linear-gradient(180deg,#dfe9f566,#ffffff33);mix-blend-mode:screen}
+.rfpk .pk-arena[data-pk-field-art=painted]:is([data-pk-weather=sand],[data-pk-weather=sandstorm]) .pk-field-light{background:linear-gradient(180deg,#d9a85a88,#c08a4a66);mix-blend-mode:multiply}
+.rfpk .pk-arena[data-pk-field-art=painted]:is([data-pk-weather=sand],[data-pk-weather=sandstorm]) .pk-field-ambient i{background-image:linear-gradient(170deg,transparent 46%,#e8c48a88 50%,transparent 54%);background-size:120px 40px;animation:pk-sand .7s linear infinite}
+@keyframes pk-sand{to{background-position:-120px 10px}}
+.rfpk .pk-arena[data-pk-field-art=painted]:is([data-pk-weather=sun],[data-pk-weather=harsh-sun]) .pk-field-light{background:radial-gradient(circle at 80% 0,#fff4c8cc,#ffd27a44 35%,transparent 60%);mix-blend-mode:screen;animation:pk-sun 4s ease-in-out infinite alternate}
+@keyframes pk-sun{to{opacity:.7}}
+.rfpk[data-pk-field-motion=off] .pk-arena :is(.pk-field-ambient,.pk-field-ambient i,.pk-field-light,.pk-field-light:after){animation:none!important}
+@media(prefers-reduced-motion:reduce){.rfpk .pk-arena :is(.pk-field-ambient,.pk-field-ambient i,.pk-field-light,.pk-field-light:after,.pk-background-layer){animation:none!important}}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=night] img.pk-platform-art{filter:brightness(.5) saturate(.75) hue-rotate(10deg)}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=night] .pk-battle-sprite{filter:brightness(.86) saturate(.9)}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=dusk] img.pk-platform-art{filter:brightness(.82) sepia(.25) saturate(1.1)}
+.rfpk .pk-arena[data-pk-outdoor=true][data-pk-time=dawn] img.pk-platform-art{filter:brightness(.95) sepia(.12)}

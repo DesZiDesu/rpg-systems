@@ -1,0 +1,31 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.94.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.1.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "painted-fields",
+      "title": "Painted battle fields",
+      "text": "All 20 terrains have new painted scenes and floor bases, with light that follows the story clock outdoors (dawn, day, dusk, night), ambient particles and live weather. Settings → Field art switches back to Classic FireRed."
+    },
+    {
+      "id": "double-bases",
+      "title": "Double battle floor bases",
+      "text": "The second Pokémon on each side now stands on its own floor base."
+    },
+    {
+      "id": "scene-card",
+      "title": "Pokémon League scene card",
+      "text": "The scene status card has its own Day and Night design in the Pokémon League chat themes. Catches no longer print a caption over the field."
+    }
+  ]
+}

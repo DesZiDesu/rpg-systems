@@ -5,7 +5,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 export const SHEETS=[
  {src:'tools/css-src/pokemon-kinetic.src.css',out:'styles/pokemon-kinetic.css',tokens:{K:'#roleforge-pokemon[data-pk-layout][data-pk-theme=kinetic]',D:'#roleforge-pokemon-dock[data-pk-theme=kinetic]'}},
- {src:'tools/css-src/chat-pokemon-theme.src.css',out:'styles/chat-pokemon-theme.css',tokens:{P:'.trpg-chat:is([data-rf-chat-theme="pokemon"],[data-rf-chat-theme="pokemon-dark"])',N:'.trpg-chat[data-rf-chat-theme="pokemon-dark"]'}},
+ {src:'tools/css-src/chat-pokemon-theme.src.css',out:'styles/chat-pokemon-theme.css',tokens:{P:'.trpg-chat:is([data-rf-chat-theme="pokemon"],[data-rf-chat-theme="pokemon-dark"])',N:'.trpg-chat[data-rf-chat-theme="pokemon-dark"]',S:'.trpg-scene-ledger:is([data-rf-chat-theme="pokemon"],[data-rf-chat-theme="pokemon-dark"])',M:'.trpg-scene-ledger[data-rf-chat-theme="pokemon-dark"]'}},
 ];
 // Tokens are replaced only as whole selector words after the header comment.
 export function expand(source,tokens){

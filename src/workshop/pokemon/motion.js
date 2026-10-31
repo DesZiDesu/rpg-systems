@@ -1,4 +1,4 @@
-import {battleSteps,drawStep,undrawStep,stepDuration} from './battle-vfx.js?v=0.93.0';
+import {battleSteps,drawStep,undrawStep,stepDuration} from './battle-vfx.js?v=0.94.0';
 // Presentation only: descriptors are derived from a successfully saved game.
 export function motionSequence(before,after,event,dex){
  if(!before||!after||!event)return [];
@@ -41,20 +41,18 @@ export function mountPokemonMotion({arena,language,onStep=()=>{}}){
   for(const n of stage.closest('dialog')?.querySelectorAll('.pk-battle-console button:not(:disabled),.pk-battle-footer button:not(:disabled)')||[]){n.disabled=true;locked.push(n);}stage.append(container);if(item.vfx)drawn=drawStep(stage,item,{ballUrl,language});if(item.vfx&&item.kind==='hit'&&item.damage>0)haptic(item.crit?[18,30,18]:14);if(item.kind==='faint')haptic([30,60,30]);
   timer=setTimeout(()=>{stage?.classList.remove('pkm-'+item.kind);controls?.remove();controls=null;if(drawn){undrawStep(drawn);drawn=null;}next(own);},duration);
  }
- // Throw, then 1-2-3 wobbles with a pause between each, then a click or a breakout.
+ // Throw, then 1-2-3 wobbles with a pause between each, then a click or a
+ // breakout. No caption: the ball itself shows the result.
  // The CSS throw stays; its built-in shake is switched off so the rhythm is scripted.
  function catchScene(stage,container,ball,sparks,item,own){
-  const shakes=Math.max(0,Math.min(3,item.shakes??3)),first=1250,gap=950,end=first+shakes*gap,foe=stage.querySelector('.pk-foe-art'),th=(typeof language==='function'?language():language)==='th';
+  const shakes=Math.max(0,Math.min(3,item.shakes??3)),first=1250,gap=950,end=first+shakes*gap,foe=stage.querySelector('.pk-foe-art');
   ball.style.animationIterationCount='1,0,1';ball.style.animationDelay='0s,0s,'+(end+120)/1000+'s';ball.style.transformOrigin='50% 85%';
   if(foe){foe.style.animationDelay='.6s,'+(end+80)/1000+'s';styled.push(foe);}
   sparks.style.animationDelay=(end+150)/1000+'s';
   for(const plate of stage.querySelectorAll('.pk-battle-status')){plate.style.animationDuration=(end+1500)/1000+'s';styled.push(plate);}
-  const caption=document.createElement('span');caption.className='pkm-catch-caption';container.append(caption);
   const at=(ms,fn)=>{const id=setTimeout(()=>{if(own===generation)fn();},ms);pending.push(id);};
   for(let i=0;i<shakes;i++)at(first+i*gap,()=>{ball.animate?.({rotate:['0deg','-26deg','20deg','-9deg','0deg']},{duration:560,easing:'ease-in-out'});haptic(12);});
-  const name=item.name||(th?'โปเกมอน':'the Pokémon');
-  const lines=item.kind==='caught'?[th?'จับได้แล้ว! '+name+' ถูกจับแล้ว!':'Gotcha! '+name+' was caught!']:[[th?'ไม่นะ! มันหลุดออกมา!':'Oh no! The Pokémon broke free!'],[th?'อ๊ะ! เหมือนจะจับได้แล้วเชียว!':'Aww! It appeared to be caught!'],[th?'อ๊าก! เกือบได้แล้ว!':'Aargh! Almost had it!'],[th?'โธ่! เกือบได้แล้วจริงๆ!':'Gah! It was so close, too!']][shakes];
-  at(end,()=>{caption.textContent=lines[0];caption.classList.add('is-shown');
+  at(end,()=>{
    if(item.kind==='caught'){ball.animate?.([{scale:1,filter:'brightness(1)'},{scale:1.18,filter:'brightness(1.4)'},{scale:1,filter:'brightness(.6)'}],{duration:420,fill:'forwards'});haptic([18,40,30]);}
    else{ball.animate?.([{scale:1,opacity:1},{scale:1.5,opacity:0}],{duration:260,fill:'forwards'});haptic(40);}});
   return end+1700;

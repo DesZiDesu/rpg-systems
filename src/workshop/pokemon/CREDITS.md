@@ -14,6 +14,8 @@ Expansion 0.2.0: item catalogue (2,223 records), training, gender ratios, EV yie
 
 First-release contact, punch, bite, sound and powder move flags come from `move_flag_map.csv` and `move_flags.csv` at the same pinned PokeAPI commit `2bf639e5572812a67d2b94903fdcb9d095f5aeb2`, under the bundled PokeAPI license. `move-flags.js` stores only these derived identifier sets.
 
+Painted fields: `assets/battle/scenes/` holds original vector scenes and floor bases for all 20 terrains, drawn for this add-on by `tools/build-pokemon-scenes.py` (deterministic, no third-party artwork). They are the default; Settings → World & journey → Field art switches back to the classic FireRed fields below. Time-of-day light, ambient particles and weather are CSS layers.
+
 Field layers: `assets/battle/layers/` separates the decoded FireRed fields above into reconstructed horizontal background bands and transparent player/opponent bases. The original combined files are retained. Layer extraction is reproducible with `tools/build-pokemon-field-layers.py`; loop movement is implemented by CSS rather than claiming original animated game footage.
 
 Battle sprite index: `data/battle-sprites.json` records exact-form, color and gender availability from PokeAPI/sprites at revision `97a7832d307311c0e1c6ea9035308bf80cc94f81`. Pixel GIFs use `versions/generation-v/black-white/animated/`; model GIFs use `other/showdown/`; static front/back PNGs use the corresponding root folders. These mirrors include community sprites and renders, including newer Pokémon in older pixel styles; they are not all original official game animations. Images load only when used, not as a bulk library download. Rebuild metadata with `python tools/build-pokemon-battle-sprites.py`.
