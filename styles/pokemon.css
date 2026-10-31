@@ -998,3 +998,7 @@
 @keyframes pk-shop-up{from{transform:translateY(100%)}}
 @media(max-height:760px){.rfpk .pk-shop-sheet{gap:9px}.rfpk .pk-shop-hero-icon{width:52px;height:52px}.rfpk .pk-shop-hero-icon img{width:40px;height:40px}.rfpk .pk-shop-hero h2{font-size:19px}.rfpk .pk-shop-stepper button{height:38px}.rfpk .pk-shop-stepper output{font-size:24px}}
 @media(prefers-reduced-motion:reduce){.rfpk .pk-shop-sheet,.rfpk .pk-shop-scrim,.rfpk .pk-shop-toast{animation:none}}
+/* Item atlas icons size like the bundled sprites; pixel art stays crisp. */
+.rfpk .pk-item-atlas{display:inline-block;flex-shrink:0;width:48px;height:48px;background-repeat:no-repeat;image-rendering:pixelated}
+.rfpk .pk-item-command>.pk-item-atlas{width:32px;height:32px}
+#roleforge-pokemon-dock .pk-dock-actions .pk-item-atlas{width:19px;height:19px}

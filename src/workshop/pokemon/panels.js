@@ -1,10 +1,10 @@
-import {maxPP} from './item-use.js?v=0.97.0';
-import {NATURES,STAT_NAMES} from './specimens.js?v=0.97.0';
-import {STATUS_NAMES} from './battle-rules.js?v=0.97.0';
-import {itemEffect,itemName} from './items.js?v=0.97.0';
-import {trainingChoices} from './game-actions.js?v=0.97.0';
-import {GYMS,isCenter,gymAvailable} from './adventure-rules.js?v=0.97.0';
-import {icon as lucide} from './icons.js?v=0.97.0';
+import {maxPP} from './item-use.js?v=0.97.1';
+import {NATURES,STAT_NAMES} from './specimens.js?v=0.97.1';
+import {STATUS_NAMES} from './battle-rules.js?v=0.97.1';
+import {itemEffect,itemName} from './items.js?v=0.97.1';
+import {trainingChoices} from './game-actions.js?v=0.97.1';
+import {GYMS,isCenter,gymAvailable} from './adventure-rules.js?v=0.97.1';
+import {icon as lucide} from './icons.js?v=0.97.1';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function createExpansionPanels({get,apply,navigate,render,importItem}){
  let uid='',moveId=0,slot=0,spawnKey='gardevoir',spawnSearch='',itemId='master-ball',itemSearch='',confirmation=null,method='all',sandboxTab='spawn';

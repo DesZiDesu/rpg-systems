@@ -3,7 +3,7 @@
 // Bottle Caps, Tera Shards), battle items (X items, Dire Hit, Poké Doll), field
 // items (Repel, Escape Rope, Honey) and fossils. Pure state changes: the
 // caller passes engine helpers in ctx so this module has no core import.
-import {NATURES,refreshStats} from './specimens.js?v=0.97.0';
+import {NATURES,refreshStats} from './specimens.js?v=0.97.1';
 
 const STAT_ITEMS={'hp-up':0,protein:1,iron:2,calcium:3,zinc:4,carbos:5};
 const WINGS={'health-wing':0,'muscle-wing':1,'resist-wing':2,'genius-wing':3,'clever-wing':4,'swift-wing':5};

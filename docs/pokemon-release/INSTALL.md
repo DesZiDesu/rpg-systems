@@ -1,12 +1,12 @@
 # Pokémon First Release — install and play
 
-RoleForge 0.97.0 and Pokémon 2.4.0 are available on `main`. Existing Aster, Death Note and RoleForge features are included. No preview branch is required.
+RoleForge 0.97.1 and Pokémon 2.4.1 are available on `main`. Existing Aster, Death Note and RoleForge features are included. No preview branch is required.
 
 ## Install with SillyTavern
 
 1. Back up your SillyTavern user data. If RoleForge is already installed, open Extensions → Manage extensions → RoleForge → Update, then reload. If you previously selected a preview/release branch, switch to `main` before updating.
 2. For a fresh installation: Extensions → Install extension. Repository: `https://github.com/DesZiDesu/rpg-systems`. Use the default branch (`main`). Reload SillyTavern. Install only one active copy of RoleForge.
-3. Open RoleForge → Workshop → Pokémon → Install/Update **2.4.0**. Enable it for your character.
+3. Open RoleForge → Workshop → Pokémon → Install/Update **2.4.1**. Enable it for your character.
 4. Import a PNG card: **Red Sunken Sun** (Thai), **Dawn Midnights** (English), or **Sun & Dawn** (Character Creation). PNGs include the cover, character data and compressed World Pack together; [download choices, reference coverage and openings](CARDS.md). The two language editions have six RoleForge-formatted greetings each. The library installs in the browser when the card first opens. Open Pokémon → Journey to choose a starter, and configure your usual SillyTavern chat-completion API for narration.
 5. Sun & Dawn has no first message and opens Pokémon Character Creation. Leave Workshop → Pokémon → **Use addon character creation** on. A blank chat, or deleting an authored first greeting, can open the creator. Its chosen partner and kit replace the authored defaults; no kit stays empty.
 

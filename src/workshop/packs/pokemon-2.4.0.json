@@ -1,0 +1,36 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.97.0",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.4.0",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "items",
+      "title": "Items that work",
+      "text": "Rare Candy, EXP Candy, vitamins, wings, EV-reducing berries, PP Up and PP Max, mints, Ability Capsule and Patch, Bottle Caps, Tera Shards, X items, Dire Hit, Poké Doll, Repel, Escape Rope, Honey, fossils (at a lab or museum), drinks, Sacred Ash and more now have their game effects. Key items, ingredients and collectibles have no battle use; sell them at a shop."
+    },
+    {
+      "id": "companions",
+      "title": "Only the Pokémon you send out walk with you",
+      "text": "Your first partner starts beside you. Other party Pokémon stay in their Poké Balls until you send them out, and the AI is told to keep them unseen and silent."
+    },
+    {
+      "id": "encounters",
+      "title": "Encounters and the Battle button",
+      "text": "The battle window opens by itself when an encounter starts from your own message. With Player-chosen encounters on, a Thai name works when the reply shows that Pokémon's header. Wild Pokémon headers in the chat have a Battle button for when the battle did not start."
+    },
+    {
+      "id": "kinetic-only",
+      "title": "Kinetic only",
+      "text": "The Original and Aperture themes are removed; saved choices open in Kinetic. Dark mode fixes for the Forms grid and the Field journal."
+    }
+  ]
+}

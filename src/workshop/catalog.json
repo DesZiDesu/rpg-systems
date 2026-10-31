@@ -376,7 +376,7 @@
       "kind": "system",
       "icon": "box",
       "color": "gold",
-      "minimumRoleForge": "0.97.0",
+      "minimumRoleForge": "0.97.1",
       "author": "RoleForge",
       "description": "คู่หูรายตัว คลังไอเทมร่วม ฝึกท่า Center Trainer ยิม ภารกิจหายาก และ Sandbox สำหรับผู้เล่น",
       "descriptionEn": "Individual companions, shared item stock, move training, Centers, trainers, Gyms, rare quests and a player-controlled Sandbox.",
@@ -691,6 +691,28 @@
             "ร้านค้า Poké Mart: ซื้อขายไอเทมด้วยกระเป๋าเงิน RoleForge ในการบันทึกครั้งเดียว",
             "เงินรางวัลจากเทรนเนอร์ และหัวหน้ายิมในเนื้อเรื่องมอบเหรียญตรา",
             "ตั้งค่าร้านค้าและเงินรางวัล: ราคา การขาย ของแถม และร้าน Sandbox"
+          ]
+        },
+        {
+          "version": "2.4.0",
+          "path": "packs/pokemon-2.4.0.json",
+          "sha256": "2c460d92afb929704759901a1a7c5431cfd6e005180ffb40d72005f7a8885312",
+          "bytes": 1619,
+          "changes": [
+            "ไอเทมใช้งานได้จริง: Rare Candy, EXP Candy, วิตามิน, PP Up, Mint, X items, Repel, ฟอสซิล และอื่น ๆ",
+            "โปเกมอนในทีมอยู่ในบอลจนกว่าจะปล่อยออกมา คู่หูตัวแรกเดินตามตั้งแต่เริ่ม",
+            "หน้าต่างต่อสู้เปิดเองเมื่อเจอโปเกมอนจากข้อความผู้เล่น และมีปุ่มสู้ใน Pokémon Header",
+            "เหลือธีม Kinetic ธีมเดียว และแก้โหมดมืดของการ์ดร่างกับบันทึกการเดินทาง"
+          ]
+        },
+        {
+          "version": "2.4.1",
+          "path": "packs/pokemon-2.4.1.json",
+          "sha256": "a479d0e52f32103adbce49994f87775004a98257bbe1f2c6856756ed31dabe16",
+          "bytes": 727,
+          "changes": [
+            "ไอเทมทั้ง 2,223 ชิ้นมีรูปในกระเป๋า ร้านค้า และ Battle Bag",
+            "ปุ่มต่อสู้ใน Pokémon Header ดีไซน์ใหม่สไตล์เมนู FIGHT พร้อม Poké Ball"
           ]
         }
       ]

@@ -1,5 +1,5 @@
-import {sha256} from '../../vendor/js-sha256/index.js?v=0.97.0';
-import {containsIdentity} from './identity.js?v=0.97.0';
+import {sha256} from '../../vendor/js-sha256/index.js?v=0.97.1';
+import {containsIdentity} from './identity.js?v=0.97.1';
 const visibleText=s=>String(s||'').replace(/<think\b[^>]*>[\s\S]*?(?:<\/think>|$)/giu,'').replace(/<!--[\s\S]*?-->/gu,'').replace(/<[^>]+>/gu,' ');
 export const pickupText=s=>visibleText(s).replace(/\s+/gu,' ').trim();
 const actionText=s=>visibleText(s).replace(/\(\([\s\S]*?\)\)|\(ooc:[\s\S]*?\)/giu,' ').trim();

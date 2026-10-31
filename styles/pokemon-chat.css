@@ -103,11 +103,23 @@
  #chat .pkc-body-mark{left:0}
 }
 @media(prefers-reduced-motion:reduce){#chat [data-pokemon-chat] *{animation:none!important;transition:none!important}}
-/* Wild Pokémon header with a Battle button (fallback when the reply did not start the battle). */
-#chat [data-pokemon-chat=header-row]{display:flex;align-items:center;gap:12px;width:100%;margin:0!important}
+/* Wild Pokémon header with a Battle button (fallback when the reply did not
+   start the battle): a slanted red FIGHT-menu plate led by a Poké Ball. */
+#chat [data-pokemon-chat=header-row]{display:flex;align-items:center;gap:14px;width:100%;margin:0!important}
 #chat [data-pokemon-chat=header-row]>[data-pokemon-chat=header]{flex:1;min-width:0}
-#chat .pkc-battle{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid var(--pkc-accent,#e5372a);border-radius:999px;background:transparent;color:var(--pkc-accent,#e5372a);font:700 13px/1 var(--pkc-display,inherit);letter-spacing:.06em;cursor:pointer}
-#chat .pkc-battle svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-#chat .pkc-battle:hover:not(:disabled){background:var(--pkc-accent,#e5372a);color:#fff}
-#chat .pkc-battle:disabled{opacity:.5;cursor:wait}
-#chat .pkc-battle:focus-visible{outline:2px solid var(--pkc-accent,#e5372a);outline-offset:3px}
+#chat .pkc-battle{position:relative;flex:none;display:inline-flex;align-items:center;gap:9px;min-height:42px;margin:0 6px 0 0;padding:0 18px 0 8px;border:0;border-radius:4px;background:linear-gradient(180deg,#f2554a 0%,#dc2f24 55%,#b8221a 100%);color:#fff;font:700 14px/1 var(--pkc-display,'Chakra Petch',sans-serif);letter-spacing:.08em;text-transform:uppercase;text-shadow:0 1px 0 #7a1510;box-shadow:3px 3px 0 #7a1510,inset 0 1px 0 #ffffff59;transform:skewX(-10deg);cursor:pointer;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}
+#chat .pkc-battle>*{transform:skewX(10deg)}
+#chat .pkc-battle:before{content:'';position:absolute;inset:0 auto 0 -40%;width:30%;background:linear-gradient(90deg,transparent,#ffffff55,transparent);transform:skewX(-20deg);opacity:0;pointer-events:none}
+#chat .pkc-battle:hover:not(:disabled){transform:skewX(-10deg) translate(-1px,-1px);box-shadow:4px 4px 0 #7a1510,inset 0 1px 0 #ffffff59}
+#chat .pkc-battle:hover:not(:disabled):before{opacity:1;animation:pkc-battle-shine .7s ease}
+#chat .pkc-battle:active:not(:disabled){transform:skewX(-10deg) translate(2px,2px);box-shadow:1px 1px 0 #7a1510}
+#chat .pkc-battle:disabled{filter:grayscale(.4) brightness(.85);cursor:wait}
+#chat .pkc-battle:focus-visible{outline:2px solid #ffd54a;outline-offset:3px}
+#chat .pkc-battle-ball{position:relative;flex:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#ef4444 0 44%,#1f2937 44% 56%,#f8fafc 56%);box-shadow:0 0 0 2px #1f2937,0 2px 3px #0006}
+#chat .pkc-battle-ball:after{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#f8fafc;box-shadow:0 0 0 2px #1f2937}
+#chat .pkc-battle:hover:not(:disabled) .pkc-battle-ball{animation:pkc-battle-wobble .5s ease}
+#chat .pkc-battle-label{white-space:nowrap}
+@keyframes pkc-battle-shine{from{left:-40%}to{left:120%}}
+@keyframes pkc-battle-wobble{0%,100%{rotate:0deg}30%{rotate:-18deg}60%{rotate:12deg}}
+@media(max-width:480px){#chat [data-pokemon-chat=header-row]{gap:10px}#chat .pkc-battle{min-height:38px;padding:0 13px 0 7px;font-size:12px;gap:7px}#chat .pkc-battle-ball{width:20px;height:20px}#chat .pkc-battle-ball:after{width:7px;height:7px;margin:-3.5px 0 0 -3.5px}}
+@media(prefers-reduced-motion:reduce){#chat .pkc-battle,#chat .pkc-battle-ball{transition:none;animation:none!important}#chat .pkc-battle:before{display:none}}

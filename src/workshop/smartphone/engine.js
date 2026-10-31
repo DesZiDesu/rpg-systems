@@ -1,7 +1,7 @@
-import {keitaiAction,messageChannel,mailAddress,isKeitai} from './handset.js?v=0.97.0';
-import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.97.0';
-import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.97.0';
-import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.97.0';
+import {keitaiAction,messageChannel,mailAddress,isKeitai} from './handset.js?v=0.97.1';
+import {clone,id,clean,key,safeImage,contactLabel,publicProfile,SOCIAL_APPS,APPS,fingerprint,plainSpeech} from './model.js?v=0.97.1';
+import {currencyScheme,currencyValue} from '../../currency-config.js?v=0.97.1';
+import {applyMoneyTransfer,quoteWalletDebit} from '../../money-transfer.js?v=0.97.1';
 
 const requireValue=(v,m)=>{if(!v)throw Error(m);return v;};
 const whole=n=>Number.isSafeInteger(n)&&n>0&&n<=999999999;

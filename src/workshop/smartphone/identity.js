@@ -1,4 +1,4 @@
-import {clean,clone} from './model.js?v=0.97.0';
+import {clean,clone} from './model.js?v=0.97.1';
 
 const normalized=v=>clean(v,160).normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu,' ');
 export function phoneNpcNames(npc){

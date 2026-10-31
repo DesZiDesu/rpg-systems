@@ -1,4 +1,4 @@
-import {TRANSFORMATION_SYSTEMS,transformationConfig,transformationOptions,formOptions,teraType,TERA_TYPES,baseKey} from './transformations.js?v=0.97.0';
+import {TRANSFORMATION_SYSTEMS,transformationConfig,transformationOptions,formOptions,teraType,TERA_TYPES,baseKey} from './transformations.js?v=0.97.1';
 const esc=v=>String(v??'').replace(/[&<>"']/gu,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const title=s=>String(s||'').replaceAll('-',' ').replace(/\b\w/gu,c=>c.toUpperCase());
 export function createTransformationPanels({get,apply,render,navigate}){

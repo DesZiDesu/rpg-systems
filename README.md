@@ -1,5 +1,7 @@
 # RoleForge
 
+**RoleForge 0.97.1 / Pokémon 2.4.1 — an icon for every item.** All 2,223 catalogue items show their game icon in the Bag, the Shop and the Battle Bag, and the Battle button on wild Pokémon headers is a slanted red FIGHT-menu plate led by a Poké Ball. [Thai notes](docs/pokemon-v0.97.1.th.md).
+
 **RoleForge 0.97.0 / Pokémon 2.4.0 — working items, Kinetic only.** Rare Candy, EXP Candy, vitamins, PP Up, mints, Ability Capsule/Patch, Bottle Caps, X items, Repel, Escape Rope, Honey, fossils and more now have their game effects. Party Pokémon stay in their balls until you send them out, the battle window opens when your own message starts an encounter, and wild Pokémon headers get a Battle button. The Original and Aperture themes are removed. [Thai guide and screenshots](docs/pokemon-v0.97.0.th.md).
 
 **RoleForge 0.96.0 / Pokémon 2.3.0 — Poké Mart and prize money.** Buy and sell Pokémon items in the Pokémon window: cities and towns have a Mart, the story can open specialty shops, stock grows with badges and prices come from the item catalogue. Items go into the Pokémon bag and the price comes out of the RoleForge wallet in one save. Beating trainers pays prize money, and story Gym Leaders award badges. [Thai guide and screenshots](docs/pokemon-v0.96.0.th.md).
@@ -58,7 +60,7 @@
 
 **New in 0.87.0:** Aster Phone is available in Workshop, with minimalist app icons, messaging, calls, social apps and a shared RoleForge wallet. See [usage](docs/phone-release/USAGE.md), [feature coverage](docs/phone-release/FEATURES.md) and [validation](docs/phone-release/QA.md).
 
-**Release build: 0.97.0** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
+**Release build: 0.97.1** · An RPG extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern) · English and Thai · Desktop and mobile
 
 [คู่มือภาษาไทย](docs/getting-started.th.md) · [UI screenshots](docs/previews/commerce-stock-v0562/index.html) · [Development history](docs/archive/README-v0.56.2-development.md)
 

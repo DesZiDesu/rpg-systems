@@ -2,7 +2,7 @@
 // background, so the header, narration and lines sit on whatever SillyTavern
 // background or RoleForge theme surrounds them. Type colour is the only accent.
 // Native RoleForge copy nodes are kept; only Pokémon-owned presentation changes.
-import {isPokemonSpeaker} from './chat.js?v=0.97.0';
+import {isPokemonSpeaker} from './chat.js?v=0.97.1';
 const make=(doc,tag,cls,text)=>{const node=doc.createElement(tag);node.className=cls;if(text!==undefined)node.textContent=text;return node;};
 const t=(th,en,language)=>language==='th'?th:en;
 export const TYPE_COLORS={normal:'#a8a878',fire:'#f08030',water:'#6890f0',grass:'#78c850',electric:'#f8d030',ice:'#98d8d8',fighting:'#c03028',poison:'#a040a0',ground:'#e0c068',flying:'#a890f0',psychic:'#f85888',bug:'#a8b820',rock:'#b8a038',ghost:'#705898',dragon:'#7038f8',dark:'#705848',steel:'#b8b8d0',fairy:'#ee99ac',stellar:'#7163cd'};
@@ -47,8 +47,8 @@ export function pokemonSpeakerHeader(profile,{language='en',open=()=>{},battle=n
  // did not start the battle by itself.
  if(!battle||!(p.speciesOnly||p.ownerKind==='wild')||battle.active?.(p))return button;
  const row=make(doc,'div','pkc-header-row'),fight=make(doc,'button','pkc-battle');fight.type='button';fight.dataset.roleforgeControl='pokemon';fight.setAttribute('aria-label',t('สู้กับ ','Battle ',language)+p.name);
- const sword=doc.createElementNS('http://www.w3.org/2000/svg','svg');sword.setAttribute('viewBox','0 0 24 24');sword.setAttribute('aria-hidden','true');for(const d of ['M14.5 17.5 3 6V3h3l11.5 11.5','M13 19l6-6','M16 16l4 4','M19 21l2-2']){const path=doc.createElementNS(sword.namespaceURI,'path');path.setAttribute('d',d);sword.append(path);}
- fight.append(sword,make(doc,'span','',t('สู้','Battle',language)));fight.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();fight.disabled=true;Promise.resolve(battle.start(p)).catch(()=>{}).finally(()=>{fight.disabled=false;});});
+ const ball=make(doc,'span','pkc-battle-ball');ball.setAttribute('aria-hidden','true');
+ fight.append(ball,make(doc,'span','pkc-battle-label',t('ต่อสู้!','Battle!',language)));fight.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();fight.disabled=true;Promise.resolve(battle.start(p)).catch(()=>{}).finally(()=>{fight.disabled=false;});});
  paint(row,profile);row.dataset.pokemonChat='header-row';row.append(button,fight);return row;
 }
 // Lines the author already wrapped in quotes keep theirs; others get “ ”.

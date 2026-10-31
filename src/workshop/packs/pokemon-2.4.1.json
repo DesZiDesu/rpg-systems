@@ -1,0 +1,26 @@
+{
+  "format": "roleforge-workshop-addon",
+  "schema": 1,
+  "minimumRoleForge": "0.97.1",
+  "id": "pokemon",
+  "kind": "system",
+  "name": "Pokémon",
+  "version": "2.4.1",
+  "capabilities": [
+    "read-scene",
+    "continue-scene-on-request",
+    "manage-pokemon-party"
+  ],
+  "notes": [
+    {
+      "id": "item-icons",
+      "title": "An icon for every item",
+      "text": "All 2,223 catalogue items now have their game icon in the Bag, the Shop and the Battle Bag, packed into one image from the PokeAPI sprite mirror."
+    },
+    {
+      "id": "battle-button",
+      "title": "Battle button",
+      "text": "The Battle button on wild Pokémon headers is now a slanted red FIGHT-menu plate led by a Poké Ball."
+    }
+  ]
+}
